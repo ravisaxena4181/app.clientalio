@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { apiService } from '../services/api';
 import { auth } from '../utils/auth';
 import '../styles/Login.css';
+import logo from '../assets/logo_transbg.png';
 
 const Login = () => {
   const [credentials, setCredentials] = useState({
@@ -62,7 +63,7 @@ const Login = () => {
       <div className="login-left">
         <div className="login-brand">
           <div className="brand-logo">
-            <img src="/src/assets/logo_transbg.png" alt="Clientalio" className="logo-image" />
+            <img src={logo} alt="Clientalio" className="logo-image" />
           </div>
         </div>
 

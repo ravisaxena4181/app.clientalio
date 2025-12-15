@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { auth } from '../utils/auth';
 import { apiService } from '../services/api';
 import '../styles/Dashboard.css';
+import logo from '../assets/logo_transbg.png';
 
 const Dashboard = () => {
   const [user, setUser] = useState(null);
@@ -41,7 +42,7 @@ const Dashboard = () => {
       <nav className="navbar">
         <div className="container navbar-content">
           <div className="navbar-brand">
-            <img src="/src/assets/logo_transbg.png" alt="Clientalio" className="logo-navbar" />
+            <img src={logo} alt="Clientalio" className="logo-navbar" />
           </div>
           <div className="navbar-actions">
             <span className="user-email">{user?.email}</span>
