@@ -1,0 +1,26 @@
+<svg width="424" height="120" viewBox="0 0 424 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <g id="logo">
+    <!-- Blue speech bubble background -->
+    <path d="M10 15C10 9.47715 14.4772 5 20 5H70C75.5228 5 80 9.47715 80 15V75C80 80.5228 75.5228 85 70 85H30L10 100V15Z" fill="#1E90FF"/>
+    
+    <!-- White circular waves -->
+    <circle cx="45" cy="45" r="8" fill="none" stroke="white" stroke-width="3"/>
+    <circle cx="45" cy="45" r="16" fill="none" stroke="white" stroke-width="3" opacity="0.6"/>
+    <circle cx="45" cy="45" r="24" fill="none" stroke="white" stroke-width="3" opacity="0.3"/>
+    
+    <!-- Clientalio text -->
+    <text x="100" y="65" font-family="Arial, sans-serif" font-size="48" font-weight="bold" fill="#000000">Clientalio</text>
+    
+    <!-- Stars -->
+    <g transform="translate(140, 85)">
+      <polygon points="15,0 18,12 30,12 20,18 24,30 15,24 6,30 10,18 0,12 12,12" fill="#FFD700"/>
+      <polygon points="55,0 58,12 70,12 60,18 64,30 55,24 46,30 50,18 40,12 52,12" fill="#FFD700"/>
+      <polygon points="95,0 98,12 110,12 100,18 104,30 95,24 86,30 90,18 80,12 92,12" fill="#FFD700"/>
+      <polygon points="135,0 138,12 150,12 140,18 144,30 135,24 126,30 130,18 120,12 132,12" fill="#FFD700"/>
+      <polygon points="175,0 178,12 190,12 180,18 184,30 175,24 166,30 170,18 160,12 172,12" fill="#FFD700"/>
+    </g>
+    
+    <!-- BETA text -->
+    <text x="340" y="90" font-family="Arial, sans-serif" font-size="32" font-weight="bold" fill="#666666">BETA</text>
+  </g>
+</svg>
