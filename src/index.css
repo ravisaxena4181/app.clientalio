@@ -1,140 +1,101 @@
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
+@import "tailwindcss";
 
-:root {
-  --primary-color: #FF8C42;
-  --secondary-color: #FF6B35;
-  --text-dark: #2C3E50;
-  --text-light: #7F8C8D;
-  --bg-light: #F8F9FA;
-  --white: #FFFFFF;
-  --shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  --shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.15);
-}
-
-body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  background: var(--bg-light);
-  color: var(--text-dark);
-  line-height: 1.6;
-}
-
-#root {
-  min-height: 100vh;
-}
-
-/* Utility Classes */
-.container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 20px;
-}
-
-.btn {
-  padding: 12px 24px;
-  border: none;
-  border-radius: 8px;
-  font-size: 16px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  text-decoration: none;
-  display: inline-block;
-  text-align: center;
-}
-
-.btn-primary {
-  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-  color: var(--white);
-}
-
-.btn-primary:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-lg);
-}
-
-.btn-primary:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-  transform: none;
-}
-
-.btn-google {
-  background: var(--white);
-  color: var(--text-dark);
-  border: 1px solid #DDD;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-}
-
-.btn-google:hover {
-  background: #F8F9FA;
-}
-
-.input-group {
-  margin-bottom: 20px;
-}
-
-.input-group label {
-  display: block;
-  margin-bottom: 8px;
-  font-weight: 500;
-  color: var(--text-dark);
-}
-
-.input-group input {
-  width: 100%;
-  padding: 12px 16px;
-  border: 1px solid #DDD;
-  border-radius: 8px;
-  font-size: 16px;
-  transition: border-color 0.3s ease;
-}
-
-.input-group input:focus {
-  outline: none;
-  border-color: var(--primary-color);
-}
-
-.error-message {
-  background: #FEE;
-  color: #C33;
-  padding: 12px;
-  border-radius: 8px;
-  margin-bottom: 16px;
-  font-size: 14px;
-}
-
-.loading {
-  display: inline-block;
-  width: 20px;
-  height: 20px;
-  border: 3px solid rgba(255, 255, 255, 0.3);
-  border-radius: 50%;
-  border-top-color: var(--white);
-  animation: spin 1s ease-in-out infinite;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-  .container {
-    padding: 0 16px;
-  }
-  
+@layer components {
   .btn {
-    width: 100%;
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+    border-radius: 0.5rem;
+    font-weight: 600;
+    transition-property: all;
+    transition-duration: 300ms;
+    display: inline-block;
+    text-align: center;
+    cursor: pointer;
+  }
+
+  .btn-primary {
+    background: linear-gradient(to bottom right, #FF8C42, #FF6B35);
+    color: white;
+    
+    &:hover {
+      transform: translateY(-0.125rem);
+      box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+    }
+    
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+  }
+
+  .btn-google {
+    background-color: white;
+    color: #2C3E50;
+    border-width: 1px;
+    border-color: rgb(209 213 219);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    
+    &:hover {
+      background-color: rgb(249 250 251);
+    }
+  }
+
+  .input-group {
+    margin-bottom: 1.25rem;
+    
+    & label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 500;
+      color: #2C3E50;
+    }
+    
+    & input,
+    & select {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      border-width: 1px;
+      border-color: rgb(209 213 219);
+      border-radius: 0.5rem;
+      font-size: 1rem;
+      transition-property: color, background-color, border-color;
+      
+      &:focus {
+        outline: none;
+        border-color: #FF8C42;
+      }
+    }
+  }
+
+  .error-message {
+    background-color: rgb(254 202 202);
+    color: rgb(220 38 38);
+    padding: 0.75rem 1rem;
+    border-radius: 0.5rem;
+    margin-bottom: 1rem;
+    font-size: 0.875rem;
+  }
+
+  .loading {
+    display: inline-block;
+    width: 1.25rem;
+    height: 1.25rem;
+    border-width: 2px;
+    border-color: rgba(255, 255, 255, 0.3);
+    border-radius: 9999px;
+    border-top-color: white;
+    animation: spin 1s linear infinite;
+  }
+
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
   }
 }
