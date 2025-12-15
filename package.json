@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "vite build && copy netlify.toml dist\\netlify.toml",
     "preview": "vite preview"
   },
   "dependencies": {
