@@ -27,6 +27,7 @@ const Login = () => {
     setLoading(true);
 
     try {
+      console.log('Submitting login for:', credentials);
       const response = await apiService.login(credentials);
       console.log(response);
       // Handle nested response structure
@@ -39,7 +40,7 @@ const Login = () => {
           displayName: response.data.displayName,
           userRole: response.data.userRole,
           profilePicture: response.data.profilePicture,
-          userType: response.data.userType,
+          userType: response.data.userType
         });
         navigate('/dashboard');
       } else {

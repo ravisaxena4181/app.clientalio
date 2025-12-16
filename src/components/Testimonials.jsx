@@ -1,18 +1,18 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { auth } from '../utils/auth';
 import { apiService } from '../services/api';
 import logo from '../assets/logo_transbg.png';
 
-const Dashboard = () => {
+const Testimonials = () => {
   const [user, setUser] = useState(null);
   const [testimonials, setTestimonials] = useState([]);
   const [loading, setLoading] = useState(true);
   const [menuOpen, setMenuOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [activeMenu, setActiveMenu] = useState('dashboard');
   const [playingVideo, setPlayingVideo] = useState(null);
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     const userData = auth.getUser();
@@ -31,7 +31,6 @@ const Dashboard = () => {
     }
     try {
       const data = await apiService.getTestimonials(userId);
-      console.log('Fetched testimonials:', data);
       setTestimonials(data);
     } catch (error) {
       console.error('Failed to load testimonials:', error);
@@ -47,10 +46,6 @@ const Dashboard = () => {
 
   const handlePlayVideo = (videoId) => {
     setPlayingVideo(videoId);
-  };
-
-  const handlePauseVideo = () => {
-    setPlayingVideo(null);
   };
 
   const menuItems = [
@@ -106,6 +101,8 @@ const Dashboard = () => {
     },
   ];
 
+  const currentPath = location.pathname;
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Sidebar */}
@@ -130,14 +127,11 @@ const Dashboard = () => {
               <button
                 key={item.id}
                 onClick={() => {
-                  if (item.path) {
-                    navigate(item.path);
-                  }
-                  setActiveMenu(item.id);
+                  navigate(item.path);
                   setSidebarOpen(false);
                 }}
                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
-                  activeMenu === item.id
+                  currentPath === item.path
                     ? 'bg-primary text-white'
                     : 'text-gray-700 hover:bg-gray-100'
                 }`}
@@ -171,14 +165,6 @@ const Dashboard = () => {
         ></div>
       )}
 
-      {/* Sidebar Overlay */}
-      {sidebarOpen && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
-          onClick={() => setSidebarOpen(false)}
-        ></div>
-      )}
-
       {/* Main Content */}
       <div className="lg:pl-64">
         {/* Top Navbar */}
@@ -197,7 +183,7 @@ const Dashboard = () => {
 
               {/* Page Title */}
               <h1 className="text-xl font-semibold text-gray-900 lg:hidden">
-                {menuItems.find(item => item.id === activeMenu)?.name || 'Dashboard'}
+                My Testimonials
               </h1>
 
               <div className="hidden lg:block"></div>
@@ -299,7 +285,7 @@ const Dashboard = () => {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Header */}
           <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-8">
-            <h1 className="text-3xl md:text-4xl font-bold text-gray-900">Video Testimonials</h1>
+            <h1 className="text-3xl md:text-4xl font-bold text-gray-900">My Testimonials</h1>
             <button 
               className="btn btn-primary flex items-center justify-center gap-2"
               onClick={() => navigate('/collect')}
@@ -574,4 +560,4 @@ const Dashboard = () => {
   );
 };
 
-export default Dashboard;
+export default Testimonials;

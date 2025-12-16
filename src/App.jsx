@@ -5,6 +5,7 @@ import Signup from './components/Signup';
 import VerifyOTP from './components/VerifyOTP';
 import Onboarding from './components/Onboarding';
 import Dashboard from './components/Dashboard';
+import Testimonials from './components/Testimonials';
 import CollectTestimonial from './components/CollectTestimonial';
 import PrivateRoute from './components/PrivateRoute';
 import { auth } from './utils/auth';
@@ -34,6 +35,14 @@ function App() {
           element={
             <PrivateRoute>
               <Dashboard />
+            </PrivateRoute>
+          } 
+        />
+        <Route 
+          path="/testimonials" 
+          element={
+            <PrivateRoute>
+              <Testimonials />
             </PrivateRoute>
           } 
         />

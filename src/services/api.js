@@ -53,6 +53,7 @@ export const apiService = {
         usertype:"customer"
       };
       const response = await api.post('/Token', payload);
+      console.log('Login API response:', api);
       return response.data;
     } catch (error) {
       const message = error.response?.data?.message || 
@@ -64,9 +65,9 @@ export const apiService = {
   },
 
   // Get testimonials
-  getTestimonials: async () => {
+  getTestimonials: async (userId) => {
     try {
-      const response = await api.get('/testimonials');
+      const response = await api.get(`/Testimonial/ListTestimonials/${userId}`);
       return response.data;
     } catch (error) {
       throw error.response?.data?.message || 'Failed to fetch testimonials';

@@ -98,4 +98,10 @@
       transform: rotate(360deg);
     }
   }
+
+  .marker-highlight {
+    background: linear-gradient(to bottom, transparent 0%, transparent 40%, #fef08a 40%, #fef08a 100%);
+    padding: 0 0.2rem;
+    font-weight: 500;
+  }
 }
