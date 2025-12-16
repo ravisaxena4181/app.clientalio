@@ -74,6 +74,18 @@ export const apiService = {
     }
   },
 
+  // Get wall of love testimonials
+  getWallTestimonials: async () => {
+    try {
+      const response = await api.get(`/SocialWall/Wall/`);
+      // The API returns an object with wallTestimonial array and metadata
+      // Return the entire response so we can access wallTitle, wallSubtitle, etc.
+      return response.data;
+    } catch (error) {
+      throw error.response?.data?.message || 'Failed to fetch wall testimonials';
+    }
+  },
+
   // Create testimonial
   createTestimonial: async (data) => {
     try {

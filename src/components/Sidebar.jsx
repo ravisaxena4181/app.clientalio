@@ -117,7 +117,7 @@ const Sidebar = ({
 
           {/* PERSONAL Label */}
           <div className="px-6 mb-2">
-            <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Personal</span>
+            <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Quick links</span>
           </div>
 
           {/* Navigation */}
