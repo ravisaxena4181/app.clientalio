@@ -96,6 +96,66 @@ export const apiService = {
       throw error.response?.data?.message || 'Failed to upload video';
     }
   },
+
+  // Register Email
+  registerEmail: async (data) => {
+    try {
+      const response = await api.post('/Customer/RegisterEmail', data);
+      return response.data;
+    } catch (error) {
+      const message = error.response?.data?.message || 
+                      error.response?.data?.error || 
+                      error.response?.data || 
+                      'Registration failed. Please try again.';
+      throw typeof message === 'string' ? message : JSON.stringify(message);
+    }
+  },
+
+  // Verify OTP
+  verifyOTP: async (data) => {
+    try {
+      const response = await api.post('/Customer/VerifyEmail', data);
+      return response.data;
+    } catch (error) {
+      const message = error.response?.data?.message || 
+                      error.response?.data?.error || 
+                      error.response?.data || 
+                      'OTP verification failed.';
+      throw typeof message === 'string' ? message : JSON.stringify(message);
+    }
+  },
+
+  // Resend OTP
+  resendOTP: async (data) => {
+    try {
+      const response = await api.post('/Customer/ResendOTP', data);
+      return response.data;
+    } catch (error) {
+      const message = error.response?.data?.message || 
+                      error.response?.data?.error || 
+                      error.response?.data || 
+                      'Failed to resend OTP.';
+      throw typeof message === 'string' ? message : JSON.stringify(message);
+    }
+  },
+
+  // Complete Onboarding
+  completeOnboarding: async (formData) => {
+    try {
+      const response = await api.post('/Customer/CompleteSignup', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      return response.data;
+    } catch (error) {
+      const message = error.response?.data?.message || 
+                      error.response?.data?.error || 
+                      error.response?.data || 
+                      'Failed to complete profile.';
+      throw typeof message === 'string' ? message : JSON.stringify(message);
+    }
+  },
 };
 
 export default api;
