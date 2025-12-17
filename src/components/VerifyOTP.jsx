@@ -75,10 +75,15 @@ const VerifyOTP = () => {
         Email: email,
         OTP: otpCode,
       });
-        console.log(response);
+      console.log('VerifyOTP response:', response.data);
+      
       if (response.success) {
-        // Redirect to onboarding to complete profile setup
-        navigate('/onboarding', { state: { email: email } });
+        // Auto login with temporary password from OTP verification
+        if (response.data.email && response.data.password) {
+          await AutoLoginCustomer(response.data.email, response.data.password);
+        } else {
+          setError('Missing credentials for auto-login');
+        }
       } else {
         setError(response.message || 'Invalid OTP');
       }
@@ -86,6 +91,47 @@ const VerifyOTP = () => {
       setError(err || 'Verification failed. Please try again.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const AutoLoginCustomer = async (email, password) => {
+    try {
+      const loginResponse = await apiService.login({
+        email: email,
+        password: password,
+        usertype: "customer"
+      });
+      
+      console.log('Auto-login response:', loginResponse);
+      
+      // Handle nested response structure (same as Login.jsx)
+      if (loginResponse.success && loginResponse.data && loginResponse.data.token) {
+        auth.setToken(loginResponse.data.token);
+        auth.setUser({
+          userId: loginResponse.data.userId,
+          email: loginResponse.data.email,
+          userName: loginResponse.data.userName,
+          displayName: loginResponse.data.displayName,
+          userRole: loginResponse.data.userRole,
+          profilePicture: loginResponse.data.profilePicture,
+          userType: loginResponse.data.userType
+        });
+        
+        // Redirect to onboarding to complete profile setup
+        navigate('/onboarding', { 
+          state: { 
+            email: loginResponse.data.email,
+            userId: loginResponse.data.userId
+          } 
+        });
+      } else {
+        setError('Auto-login failed. Please login manually.');
+        navigate('/login');
+      }
+    } catch (err) {
+      console.error('Auto-login error:', err);
+      setError('Auto-login failed. Please login manually.');
+      navigate('/login');
     }
   };
 

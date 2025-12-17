@@ -49,14 +49,14 @@ const Onboarding = () => {
       formData.append('Password', password);
       formData.append('DisplayName', name);
       if (profilePicture) {
-        formData.append('ProfilePicture', profilePicture);
+        formData.append('UploadedImage', profilePicture);
       }
 
       const response = await apiService.completeOnboarding(formData);
 
       if (response.success) {
         // Redirect to login page with success message
-        navigate('/login', { 
+        navigate('/dashboard', { 
           state: { 
             message: response.message || 'Signup completed successfully! Please login.' 
           } 

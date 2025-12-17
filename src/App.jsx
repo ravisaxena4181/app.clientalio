@@ -83,11 +83,23 @@ function App() {
         />
         <Route 
           path="/" 
-          element={<Navigate to={auth.isAuthenticated() ? "/dashboard" : "/login"} replace />} 
+          element={
+            auth.isAuthenticated() ? (
+              <Navigate to="/dashboard" replace />
+            ) : (
+              <Navigate to="/login" replace />
+            )
+          } 
         />
         <Route 
           path="*" 
-          element={<Navigate to="/" replace />} 
+          element={
+            auth.isAuthenticated() ? (
+              <Navigate to="/dashboard" replace />
+            ) : (
+              <Navigate to="/login" replace />
+            )
+          } 
         />
       </Routes>
     </Router>
