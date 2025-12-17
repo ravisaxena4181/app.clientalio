@@ -55,10 +55,19 @@ const Onboarding = () => {
       const response = await apiService.completeOnboarding(formData);
 
       if (response.success) {
-        // Redirect to login page with success message
+        // Update auth user with new displayName and profilePicture
+        const currentUser = auth.getUser() || {};
+        auth.setUser({
+          ...currentUser,
+          displayName: name,
+          userName: name,
+          profilePicture: response.data?.profilePicture || previewUrl
+        });
+
+        // Redirect to dashboard
         navigate('/dashboard', { 
           state: { 
-            message: response.message || 'Signup completed successfully! Please login.' 
+            message: response.message || 'Profile completed successfully!' 
           } 
         });
       } else {

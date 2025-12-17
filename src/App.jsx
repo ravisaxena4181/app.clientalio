@@ -31,7 +31,7 @@ function App() {
         />
         <Route 
           path="/onboarding" 
-          element={auth.isAuthenticated() ? <Navigate to="/dashboard" replace /> : <Onboarding />} 
+          element={<Onboarding />} 
         />
         <Route 
           path="/dashboard" 
