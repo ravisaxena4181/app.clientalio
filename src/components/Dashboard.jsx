@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { auth } from '../utils/auth';
 import { apiService } from '../services/api';
@@ -54,6 +54,24 @@ const Dashboard = () => {
     setPlayingVideo(null);
   };
 
+  // Calculate average rating from testimonials
+  const averageRating = useMemo(() => {
+    if (!testimonials || testimonials.length === 0) return 0;
+    
+    const testimonialsWithRatings = testimonials.filter(t => {
+      if (!t.ratings) return false;
+      const numRating = Number(t.ratings);
+      return !isNaN(numRating) && numRating > 0;
+    });
+    
+    if (testimonialsWithRatings.length === 0) return 0;
+    
+    const totalRating = testimonialsWithRatings.reduce((sum, t) => sum + Number(t.ratings), 0);
+    const average = totalRating / testimonialsWithRatings.length;
+    
+    return Math.round(average * 10) / 10; // Round to 1 decimal place
+  }, [testimonials]);
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Sidebar 
@@ -104,12 +122,12 @@ const Dashboard = () => {
           {/* Header */}
           <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-4 mb-8">
             <div>
-              <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
+              <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-2">
                 Welcome back, {user?.displayName || user?.email || 'User'} 👋
               </h1>
-              <p className="text-gray-600">you've collected {testimonials.length} testimonials!</p>
+              <p className="text-sm sm:text-base text-gray-600">you've collected {testimonials.length} testimonials!</p>
             </div>
-            <div className="flex gap-3">
+            <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
               <button 
                 className="px-6 py-3 border-2 border-teal-500 text-teal-600 font-medium rounded-lg hover:bg-teal-50 transition-colors flex items-center gap-2"
                 onClick={() => navigate('/wall')}
@@ -134,17 +152,17 @@ const Dashboard = () => {
           {/* Stats Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             {/* Total Testimonials Card */}
-            <div className="bg-gradient-to-br from-purple-100 to-purple-200 rounded-2xl p-6 relative overflow-hidden">
+            <div className="bg-gradient-to-br from-purple-100 to-purple-200 rounded-2xl p-4 sm:p-6 relative overflow-hidden">
               <div className="relative z-10">
                 <div className="flex items-center justify-between mb-2">
                   <div>
-                    <div className="text-4xl font-bold text-purple-800">
+                    <div className="text-3xl sm:text-4xl font-bold text-purple-800">
                       {testimonials.length}/{testimonials.length + 3}
                     </div>
-                    <div className="text-sm text-purple-700 font-medium mt-1">Total testimonials</div>
+                    <div className="text-xs sm:text-sm text-purple-700 font-medium mt-1">Total testimonials</div>
                   </div>
-                  <div className="bg-white bg-opacity-50 rounded-xl p-3">
-                    <svg className="w-8 h-8 text-purple-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div className="bg-white bg-opacity-50 rounded-xl p-2 sm:p-3">
+                    <svg className="w-6 h-6 sm:w-8 sm:h-8 text-purple-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                     </svg>
                   </div>
@@ -153,15 +171,15 @@ const Dashboard = () => {
             </div>
 
             {/* Text Templates Card */}
-            <div className="bg-gradient-to-br from-red-100 to-pink-200 rounded-2xl p-6 relative overflow-hidden">
+            <div className="bg-gradient-to-br from-red-100 to-pink-200 rounded-2xl p-4 sm:p-6 relative overflow-hidden">
               <div className="relative z-10">
                 <div className="flex items-center justify-between mb-2">
                   <div>
-                    <div className="text-4xl font-bold text-red-800">1/2</div>
-                    <div className="text-sm text-red-700 font-medium mt-1">Text collect templates</div>
+                    <div className="text-3xl sm:text-4xl font-bold text-red-800">1/2</div>
+                    <div className="text-xs sm:text-sm text-red-700 font-medium mt-1">Text collect templates</div>
                   </div>
-                  <div className="bg-white bg-opacity-50 rounded-xl p-3">
-                    <svg className="w-8 h-8 text-red-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div className="bg-white bg-opacity-50 rounded-xl p-2 sm:p-3">
+                    <svg className="w-6 h-6 sm:w-8 sm:h-8 text-red-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
                     </svg>
                   </div>
@@ -170,15 +188,15 @@ const Dashboard = () => {
             </div>
 
             {/* Video Templates Card */}
-            <div className="bg-gradient-to-br from-green-100 to-teal-200 rounded-2xl p-6 relative overflow-hidden">
+            <div className="bg-gradient-to-br from-green-100 to-teal-200 rounded-2xl p-4 sm:p-6 relative overflow-hidden">
               <div className="relative z-10">
                 <div className="flex items-center justify-between mb-2">
                   <div>
-                    <div className="text-4xl font-bold text-teal-800">1/1</div>
-                    <div className="text-sm text-teal-700 font-medium mt-1">Video collect templates</div>
+                    <div className="text-3xl sm:text-4xl font-bold text-teal-800">1/1</div>
+                    <div className="text-xs sm:text-sm text-teal-700 font-medium mt-1">Video collect templates</div>
                   </div>
-                  <div className="bg-white bg-opacity-50 rounded-xl p-3">
-                    <svg className="w-8 h-8 text-teal-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div className="bg-white bg-opacity-50 rounded-xl p-2 sm:p-3">
+                    <svg className="w-6 h-6 sm:w-8 sm:h-8 text-teal-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
                     </svg>
                   </div>
@@ -187,15 +205,17 @@ const Dashboard = () => {
             </div>
 
             {/* Average Rating Card */}
-            <div className="bg-gradient-to-br from-yellow-50 to-yellow-100 rounded-2xl p-6 relative overflow-hidden">
+            <div className="bg-gradient-to-br from-yellow-50 to-yellow-100 rounded-2xl p-4 sm:p-6 relative overflow-hidden">
               <div className="relative z-10 flex items-center justify-between">
                 <div>
-                  <div className="text-5xl font-bold text-orange-500 mb-2">4.9</div>
-                  <div className="text-base text-orange-500 font-normal">Avg. Rating</div>
+                  <div className="text-3xl sm:text-4xl md:text-5xl font-bold text-orange-500 mb-2">
+                    {averageRating > 0 ? averageRating.toFixed(1) : '0.0'}
+                  </div>
+                  <div className="text-sm sm:text-base text-orange-500 font-normal">Avg. Rating</div>
                 </div>
                 <div className="flex items-center gap-0.5">
                   {[...Array(5)].map((_, i) => (
-                    <svg key={i} className="w-7 h-7 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                    <svg key={i} className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
                       <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                     </svg>
                   ))}
