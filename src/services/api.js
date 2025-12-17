@@ -169,6 +169,50 @@ export const apiService = {
       throw typeof message === 'string' ? message : JSON.stringify(message);
     }
   },
+
+  // Forgot Password
+  forgotPassword: async (data) => {
+    try {
+      const response = await api.post('/Customer/ForgotPasswordOTP', data);
+      return response.data;
+    } catch (error) {
+      const message = error.response?.data?.message || 
+                      error.response?.data?.error || 
+                      error.response?.data || 
+                      'Failed to send reset code.';
+      throw typeof message === 'string' ? message : JSON.stringify(message);
+    }
+  },
+
+  // Verify Forgot Password OTP
+  verifyForgotPasswordOTP: async (data) => {
+    try {
+      const response = await api.post('/Customer/ForgotVerifyOTP', data);
+      return response.data;
+    } catch (error) {
+      const message = error.response?.data?.message || 
+                      error.response?.data?.error || 
+                      error.response?.data || 
+                      'OTP verification failed.';
+      throw typeof message === 'string' ? message : JSON.stringify(message);
+    }
+  },
+
+  // Reset Password
+  resetPassword: async (data) => {
+    try {
+      console.log('ResetPassword API called with data:', data);
+      const response = await api.post('/Customer/ChangePassword', data);
+      console.log('ResetPassword API response:', response);
+      return response.data;
+    } catch (error) {
+      const message = error.response?.data?.message || 
+                      error.response?.data?.error || 
+                      error.response?.data || 
+                      'Failed to reset password.';
+      throw typeof message === 'string' ? message : JSON.stringify(message);
+    }
+  },
 };
 
 export default api;

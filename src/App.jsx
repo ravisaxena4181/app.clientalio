@@ -4,6 +4,9 @@ import Login from './components/Login';
 import Signup from './components/Signup';
 import VerifyOTP from './components/VerifyOTP';
 import Onboarding from './components/Onboarding';
+import ForgotPassword from './components/ForgotPassword';
+import ForgotVerifyOTP from './components/ForgotVerifyOTP';
+import ResetPassword from './components/ResetPassword';
 import Dashboard from './components/Dashboard';
 import Testimonials from './components/Testimonials';
 import WallOfLove from './components/WallOfLove';
@@ -32,6 +35,18 @@ function App() {
         <Route 
           path="/onboarding" 
           element={<Onboarding />} 
+        />
+        <Route 
+          path="/forgot-password" 
+          element={auth.isAuthenticated() ? <Navigate to="/dashboard" replace /> : <ForgotPassword />} 
+        />
+        <Route 
+          path="/forgot-verify" 
+          element={auth.isAuthenticated() ? <Navigate to="/dashboard" replace /> : <ForgotVerifyOTP />} 
+        />
+        <Route 
+          path="/reset-password" 
+          element={auth.isAuthenticated() ? <Navigate to="/dashboard" replace /> : <ResetPassword />} 
         />
         <Route 
           path="/dashboard" 
