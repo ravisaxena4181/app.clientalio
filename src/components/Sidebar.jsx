@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import logo from '../assets/logo_transbg.png';
 
@@ -7,10 +7,17 @@ const Sidebar = ({
   sidebarOpen, 
   setSidebarOpen, 
   onLogout,
-  activeMenu // optional, if not provided will use location.pathname
+  activeMenu, // optional, if not provided will use location.pathname
+  isCollapsed,
+  setIsCollapsed
 }) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const [internalCollapsed, setInternalCollapsed] = useState(false);
+  
+  // Use passed state if provided, otherwise use internal state
+  const collapsed = isCollapsed !== undefined ? isCollapsed : internalCollapsed;
+  const toggleCollapsed = setIsCollapsed || setInternalCollapsed;
 
   const menuItems = [
     {
@@ -77,11 +84,18 @@ const Sidebar = ({
   return (
     <>
       {/* Sidebar */}
-      <aside className={`fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-gray-200 transform transition-transform duration-300 ease-in-out ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0`}>
+      <aside className={`fixed inset-y-0 left-0 z-50 bg-white border-r border-gray-200 transform transition-all duration-300 ease-in-out ${
+        collapsed ? 'w-20' : 'w-64'
+      } ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0`}>
         <div className="flex flex-col h-full">
           {/* Logo */}
           <div className="flex items-center justify-between p-6 border-b border-gray-200">
-            <img src={logo} alt="Clientalio" className="h-10 w-auto" />
+            {!collapsed && <img src={logo} alt="Clientalio" className="h-10 w-auto" />}
+            {collapsed && (
+              <div className="w-full flex justify-center">
+                <img src={logo} alt="Clientalio" className="h-8 w-8 object-contain" />
+              </div>
+            )}
             <button
               onClick={() => setSidebarOpen(false)}
               className="lg:hidden text-gray-600 hover:text-gray-900"
@@ -92,33 +106,53 @@ const Sidebar = ({
             </button>
           </div>
 
+          
           {/* User Profile Section */}
-          <div className="px-4 py-4">
-            <div className="bg-gradient-to-r from-teal-400 to-blue-500 rounded-lg p-4 flex items-center justify-between cursor-pointer hover:shadow-md transition-shadow">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-white overflow-hidden flex-shrink-0">
-                  {user?.profilePicture ? (
-                    <img src={user.profilePicture} alt={user.displayName} className="w-full h-full object-cover" />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-gray-200 text-gray-600 font-semibold text-sm">
-                      {(user?.displayName || user?.email || 'U').charAt(0).toUpperCase()}
-                    </div>
-                  )}
+          {!collapsed && (
+            <div className="px-4 py-4">
+              <div className="bg-gradient-to-r from-teal-400 to-blue-500 rounded-lg p-4 flex items-center justify-between cursor-pointer hover:shadow-md transition-shadow">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-white overflow-hidden flex-shrink-0">
+                    {user?.profilePicture ? (
+                      <img src={user.profilePicture} alt={user.displayName} className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center bg-gray-200 text-gray-600 font-semibold text-sm">
+                        {(user?.displayName || user?.email || 'U').charAt(0).toUpperCase()}
+                      </div>
+                    )}
+                  </div>
+                  <span className="text-white font-medium text-sm truncate">
+                    {user?.displayName || user?.email || 'User'}
+                  </span>
                 </div>
-                <span className="text-white font-medium text-sm truncate">
-                  {user?.displayName || user?.email || 'User'}
-                </span>
+                <svg className="w-5 h-5 text-white flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
               </div>
-              <svg className="w-5 h-5 text-white flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
             </div>
-          </div>
+          )}
+
+          {/* Collapsed User Profile */}
+          {collapsed && (
+            <div className="px-4 py-4 flex justify-center">
+              <div className="w-12 h-12 rounded-full bg-gradient-to-r from-teal-400 to-blue-500 overflow-hidden flex items-center justify-center cursor-pointer hover:shadow-md transition-shadow">
+                {user?.profilePicture ? (
+                  <img src={user.profilePicture} alt={user.displayName} className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-white font-semibold text-lg">
+                    {(user?.displayName || user?.email || 'U').charAt(0).toUpperCase()}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* PERSONAL Label */}
-          <div className="px-6 mb-2">
-            <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Quick links</span>
-          </div>
+          {!collapsed && (
+            <div className="px-6 mb-2">
+              <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Quick links</span>
+            </div>
+          )}
 
           {/* Navigation */}
           <nav className="flex-1 px-4 space-y-1 overflow-y-auto">
@@ -131,26 +165,28 @@ const Sidebar = ({
                   }
                   setSidebarOpen(false);
                 }}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 ${
+                className={`w-full flex items-center gap-3 ${collapsed ? 'justify-center' : ''} px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 ${
                   isActive(item)
                     ? 'bg-slate-600 text-white'
                     : 'text-gray-500 hover:bg-gray-50'
                 }`}
+                title={collapsed ? item.name : ''}
               >
                 {item.icon}
-                {item.name}
+                {!collapsed && item.name}
               </button>
             ))}
 
             {/* Logout */}
             <button
               onClick={onLogout}
-              className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-gray-500 hover:bg-gray-50 transition-all duration-200"
+              className={`w-full flex items-center gap-3 ${collapsed ? 'justify-center' : ''} px-4 py-3 rounded-lg text-sm font-medium text-gray-500 hover:bg-gray-50 transition-all duration-200`}
+              title={collapsed ? 'Logout' : ''}
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
               </svg>
-              Logout
+              {!collapsed && 'Logout'}
             </button>
           </nav>
         </div>

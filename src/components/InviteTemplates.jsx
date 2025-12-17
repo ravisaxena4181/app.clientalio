@@ -3,12 +3,14 @@ import { useNavigate } from 'react-router-dom';
 import { auth } from '../utils/auth';
 import Sidebar from './Sidebar';
 import ProfileMenu from './ProfileMenu';
+import HeaderNav from './HeaderNav';
 import Footer from './Footer';
 
 const InviteTemplates = () => {
   const [user, setUser] = useState(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -51,41 +53,23 @@ const InviteTemplates = () => {
         sidebarOpen={sidebarOpen}
         setSidebarOpen={setSidebarOpen}
         onLogout={handleLogout}
+        isCollapsed={sidebarCollapsed}
+        setIsCollapsed={setSidebarCollapsed}
       />
 
       {/* Main Content */}
-      <div className="lg:pl-64">
+      <div className={`transition-all duration-300 ${sidebarCollapsed ? 'lg:pl-20' : 'lg:pl-64'}`}>
         {/* Top Navbar */}
-        <nav className="bg-white shadow-md sticky top-0 z-30">
-          <div className="px-4 sm:px-6 lg:px-8">
-            <div className="flex justify-between items-center py-4">
-              {/* Mobile Menu Button */}
-              <button
-                onClick={() => setSidebarOpen(true)}
-                className="lg:hidden text-gray-600 hover:text-gray-900"
-              >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                </svg>
-              </button>
-
-              {/* Page Title */}
-              <h1 className="text-xl font-semibold text-gray-900 lg:hidden">
-                Invite templates
-              </h1>
-
-              <div className="hidden lg:block"></div>
-
-              {/* Profile Menu */}
-              <ProfileMenu 
-                user={user}
-                menuOpen={menuOpen}
-                setMenuOpen={setMenuOpen}
-                onLogout={handleLogout}
-              />
-            </div>
-          </div>
-        </nav>
+        <HeaderNav 
+          user={user}
+          menuOpen={menuOpen}
+          setMenuOpen={setMenuOpen}
+          onLogout={handleLogout}
+          setSidebarOpen={setSidebarOpen}
+          pageTitle="Invite templates"
+          sidebarCollapsed={sidebarCollapsed}
+          setSidebarCollapsed={setSidebarCollapsed}
+        />
 
         {/* Page Content */}
         <main className="py-8 md:py-12">

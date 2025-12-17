@@ -4,6 +4,7 @@ import { auth } from '../utils/auth';
 import { apiService } from '../services/api';
 import Sidebar from './Sidebar';
 import ProfileMenu from './ProfileMenu';
+import HeaderNav from './HeaderNav';
 import Footer from './Footer';
 
 const Testimonials = () => {
@@ -12,7 +13,10 @@ const Testimonials = () => {
   const [loading, setLoading] = useState(true);
   const [menuOpen, setMenuOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [playingVideo, setPlayingVideo] = useState(null);
+  const [viewMode, setViewMode] = useState('card');
+  const [searchKeyword, setSearchKeyword] = useState('');
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -57,41 +61,23 @@ const Testimonials = () => {
         sidebarOpen={sidebarOpen}
         setSidebarOpen={setSidebarOpen}
         onLogout={handleLogout}
+        isCollapsed={sidebarCollapsed}
+        setIsCollapsed={setSidebarCollapsed}
       />
 
       {/* Main Content */}
-      <div className="lg:pl-64">
+      <div className={`transition-all duration-300 ${sidebarCollapsed ? 'lg:pl-20' : 'lg:pl-64'}`}>
         {/* Top Navbar */}
-        <nav className="bg-white shadow-md sticky top-0 z-30">
-          <div className="px-4 sm:px-6 lg:px-8">
-            <div className="flex justify-between items-center py-4">
-              {/* Mobile Menu Button */}
-              <button
-                onClick={() => setSidebarOpen(true)}
-                className="lg:hidden text-gray-600 hover:text-gray-900"
-              >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                </svg>
-              </button>
-
-              {/* Page Title */}
-              <h1 className="text-xl font-semibold text-gray-900 lg:hidden">
-                My Testimonials
-              </h1>
-
-              <div className="hidden lg:block"></div>
-
-              {/* Profile Menu */}
-              <ProfileMenu 
-                user={user}
-                menuOpen={menuOpen}
-                setMenuOpen={setMenuOpen}
-                onLogout={handleLogout}
-              />
-            </div>
-          </div>
-        </nav>
+        <HeaderNav 
+          user={user}
+          menuOpen={menuOpen}
+          setMenuOpen={setMenuOpen}
+          onLogout={handleLogout}
+          setSidebarOpen={setSidebarOpen}
+          pageTitle="My Testimonials"
+          sidebarCollapsed={sidebarCollapsed}
+          setSidebarCollapsed={setSidebarCollapsed}
+        />
 
         {/* Page Content */}
         <main className="py-8 md:py-12">
@@ -99,15 +85,69 @@ const Testimonials = () => {
           {/* Header */}
           <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-8">
             <h1 className="text-3xl md:text-4xl font-bold text-gray-900">My Testimonials</h1>
-            <button 
-              className="btn btn-primary flex items-center justify-center gap-2"
-              onClick={() => navigate('/collect')}
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-              </svg>
-              Collect Testimonial
-            </button>
+            <div className="flex flex-col sm:flex-row sm:items-center gap-3 w-full sm:w-auto">
+              {/* Search Filter */}
+              <div className="relative flex-1 sm:flex-initial sm:min-w-[240px]">
+                <input
+                  type="text"
+                  placeholder="Search testimonials..."
+                  value={searchKeyword}
+                  onChange={(e) => setSearchKeyword(e.target.value)}
+                  className="w-full h-[42px] px-4 py-2 pl-10 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none transition-all"
+                />
+                <svg className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+                {searchKeyword && (
+                  <button
+                    onClick={() => setSearchKeyword('')}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                )}
+              </div>
+              {/* View Toggle Buttons */}
+              <div className="inline-flex gap-1 bg-gray-100 rounded-lg p-1 h-[42px]">
+                <button
+                  onClick={() => setViewMode('card')}
+                  className={`px-3 sm:px-4 py-2 rounded-md text-sm font-medium transition-all flex items-center justify-center gap-1.5 min-w-[85px] ${
+                    viewMode === 'card'
+                      ? 'bg-gradient-to-r from-teal-400 to-teal-500 text-white shadow-md'
+                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                  }`}
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                  </svg>
+                  Cards
+                </button>
+                <button
+                  onClick={() => setViewMode('list')}
+                  className={`px-3 sm:px-4 py-2 rounded-md text-sm font-medium transition-all flex items-center justify-center gap-1.5 min-w-[85px] ${
+                    viewMode === 'list'
+                      ? 'bg-gradient-to-r from-teal-400 to-teal-500 text-white shadow-md'
+                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                  }`}
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                  </svg>
+                  List
+                </button>
+              </div>
+              <button 
+                className="btn btn-primary flex items-center justify-center gap-2 h-[42px] whitespace-nowrap"
+                onClick={() => navigate('/collect')}
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+                Collect Testimonial
+              </button>
+            </div>
           </div>
 
           {/* Content */}
@@ -117,27 +157,69 @@ const Testimonials = () => {
               <p className="text-gray-600">Loading testimonials...</p>
             </div>
           ) : (
-            <div className="columns-1 md:columns-2 lg:columns-3 xl:columns-4 gap-6 space-y-6">
-              {testimonials.length === 0 ? (
+            <div className={viewMode === 'card' ? 'columns-1 sm:columns-2 lg:columns-3 gap-6 space-y-6' : 'space-y-4'}>
+              {(() => {
+                // Filter testimonials based on search keyword
+                const filteredTestimonials = testimonials.filter((testimonial) => {
+                  if (!searchKeyword.trim()) return true;
+                  
+                  const keyword = searchKeyword.toLowerCase();
+                  const clientName = (testimonial.clientName || '').toLowerCase();
+                  const workTitle = (testimonial.workTitle || '').toLowerCase();
+                  const companyName = (testimonial.companyName || '').toLowerCase();
+                  const textRecorded = (testimonial.textRecorded || '').toLowerCase();
+                  const category = (testimonial.category || '').toLowerCase();
+                  
+                  return (
+                    clientName.includes(keyword) ||
+                    workTitle.includes(keyword) ||
+                    companyName.includes(keyword) ||
+                    textRecorded.includes(keyword) ||
+                    category.includes(keyword)
+                  );
+                });
+
+                return filteredTestimonials.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-20 text-center">
                   <div className="bg-gray-100 rounded-full p-8 mb-6">
-                    <svg className="w-24 h-24 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                    </svg>
+                    {searchKeyword ? (
+                      <svg className="w-24 h-24 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                      </svg>
+                    ) : (
+                      <svg className="w-24 h-24 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                      </svg>
+                    )}
                   </div>
-                  <h3 className="text-2xl font-semibold text-gray-900 mb-2">No testimonials yet</h3>
-                  <p className="text-gray-600 mb-6 max-w-md">Start collecting video testimonials from your clients to showcase social proof</p>
-                  <button className="btn btn-primary" onClick={() => navigate('/collect')}>
-                    Get Started
-                  </button>
+                  <h3 className="text-2xl font-semibold text-gray-900 mb-2">
+                    {searchKeyword ? 'No testimonials found' : 'No testimonials yet'}
+                  </h3>
+                  <p className="text-gray-600 mb-6 max-w-md">
+                    {searchKeyword 
+                      ? `No testimonials match "${searchKeyword}". Try a different search term.`
+                      : 'Start collecting video testimonials from your clients to showcase social proof'
+                    }
+                  </p>
+                  {searchKeyword ? (
+                    <button className="btn btn-primary" onClick={() => setSearchKeyword('')}>
+                      Clear Search
+                    </button>
+                  ) : (
+                    <button className="btn btn-primary" onClick={() => navigate('/collect')}>
+                      Get Started
+                    </button>
+                  )}
                 </div>
               ) : (
-                testimonials.map((testimonial) => (
-                  testimonial.videoLinkRecorded ? (
+                filteredTestimonials.map((testimonial) => {
+                  const isCardView = viewMode === 'card';
+                  
+                  return testimonial.videoLinkRecorded ? (
                     // Video Testimonial Card
                     <div 
                       key={testimonial.id} 
-                      className="break-inside-avoid mb-6 bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 cursor-pointer"
+                      className={`${isCardView ? 'break-inside-avoid mb-6' : 'mb-4'} bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 cursor-pointer`}
                     >
                     {/* Video Thumbnail */}
                     <div className="relative aspect-video bg-gradient-to-br from-gray-900 to-gray-700 overflow-hidden group">
@@ -268,7 +350,7 @@ const Testimonials = () => {
                     // Text Testimonial Card
                     <div 
                       key={testimonial.id} 
-                      className="break-inside-avoid mb-6 bg-white rounded-2xl p-6 shadow-md hover:shadow-xl transition-all duration-300 relative"
+                      className={`${isCardView ? 'break-inside-avoid mb-6' : 'mb-4'} bg-white rounded-2xl p-6 shadow-md hover:shadow-xl transition-all duration-300 relative`}
                     >
                       {/* Heart Icon */}
                       <div className="absolute top-4 left-4">
@@ -361,9 +443,10 @@ const Testimonials = () => {
                         </button>
                       </div>
                     </div>
-                  )
-                ))
-              )}
+                  );
+                })
+              );
+              })()}
             </div>
           )}
         </div>

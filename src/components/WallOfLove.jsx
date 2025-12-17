@@ -4,6 +4,7 @@ import { auth } from '../utils/auth';
 import { apiService } from '../services/api';
 import Sidebar from './Sidebar';
 import ProfileMenu from './ProfileMenu';
+import HeaderNav from './HeaderNav';
 import Footer from './Footer';
 
 const WallOfLove = () => {
@@ -14,6 +15,7 @@ const WallOfLove = () => {
   const [loading, setLoading] = useState(true);
   const [menuOpen, setMenuOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [activeTab, setActiveTab] = useState('share');
   const [playingVideo, setPlayingVideo] = useState(null);
   const navigate = useNavigate();
@@ -80,41 +82,23 @@ const WallOfLove = () => {
         sidebarOpen={sidebarOpen}
         setSidebarOpen={setSidebarOpen}
         onLogout={handleLogout}
+        isCollapsed={sidebarCollapsed}
+        setIsCollapsed={setSidebarCollapsed}
       />
 
       {/* Main Content */}
-      <div className="lg:pl-64">
+      <div className={`transition-all duration-300 ${sidebarCollapsed ? 'lg:pl-20' : 'lg:pl-64'}`}>
         {/* Top Navbar */}
-        <nav className="bg-white shadow-md sticky top-0 z-30">
-          <div className="px-4 sm:px-6 lg:px-8">
-            <div className="flex justify-between items-center py-4">
-              {/* Mobile Menu Button */}
-              <button
-                onClick={() => setSidebarOpen(true)}
-                className="lg:hidden text-gray-600 hover:text-gray-900"
-              >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                </svg>
-              </button>
-
-              {/* Page Title */}
-              <h1 className="text-xl font-semibold text-gray-900 lg:hidden">
-                Wall of love
-              </h1>
-
-              <div className="hidden lg:block"></div>
-
-              {/* Profile Menu */}
-              <ProfileMenu 
-                user={user}
-                menuOpen={menuOpen}
-                setMenuOpen={setMenuOpen}
-                onLogout={handleLogout}
-              />
-            </div>
-          </div>
-        </nav>
+        <HeaderNav 
+          user={user}
+          menuOpen={menuOpen}
+          setMenuOpen={setMenuOpen}
+          onLogout={handleLogout}
+          setSidebarOpen={setSidebarOpen}
+          pageTitle="Wall of Love"
+          sidebarCollapsed={sidebarCollapsed}
+          setSidebarCollapsed={setSidebarCollapsed}
+        />
 
         {/* Page Content */}
         <main className="py-8 md:py-12">
@@ -127,16 +111,16 @@ const WallOfLove = () => {
               </div>
               
               {/* Action Buttons */}
-              <div className="flex gap-3">
+              <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full sm:w-auto">
                 <button
                   onClick={() => setActiveTab('share')}
-                  className={`px-6 py-2.5 text-sm font-medium rounded-lg transition-all ${
+                  className={`px-4 sm:px-6 py-2.5 text-sm font-medium rounded-lg transition-all ${
                     activeTab === 'share'
                       ? 'bg-gradient-to-r from-teal-400 to-teal-500 text-white shadow-md'
                       : 'bg-white text-gray-700 border border-gray-300 hover:border-teal-500 hover:text-teal-600'
                   }`}
                 >
-                  <span className="flex items-center gap-2">
+                  <span className="flex items-center justify-center gap-2">
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
                     </svg>
@@ -145,13 +129,13 @@ const WallOfLove = () => {
                 </button>
                 <button
                   onClick={() => setActiveTab('embed')}
-                  className={`px-6 py-2.5 text-sm font-medium rounded-lg transition-all ${
+                  className={`px-4 sm:px-6 py-2.5 text-sm font-medium rounded-lg transition-all ${
                     activeTab === 'embed'
                       ? 'bg-gradient-to-r from-purple-500 to-blue-500 text-white shadow-md'
                       : 'bg-white text-gray-700 border border-gray-300 hover:border-purple-500 hover:text-purple-600'
                   }`}
                 >
-                  <span className="flex items-center gap-2">
+                  <span className="flex items-center justify-center gap-2">
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
                     </svg>
@@ -160,13 +144,13 @@ const WallOfLove = () => {
                 </button>
                 <button
                   onClick={() => setActiveTab('weblink')}
-                  className={`px-6 py-2.5 text-sm font-medium rounded-lg transition-all ${
+                  className={`px-4 sm:px-6 py-2.5 text-sm font-medium rounded-lg transition-all ${
                     activeTab === 'weblink'
                       ? 'bg-gradient-to-r from-pink-500 to-orange-500 text-white shadow-md'
                       : 'bg-white text-gray-700 border border-gray-300 hover:border-pink-500 hover:text-pink-600'
                   }`}
                 >
-                  <span className="flex items-center gap-2">
+                  <span className="flex items-center justify-center gap-2">
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
                     </svg>
@@ -193,7 +177,7 @@ const WallOfLove = () => {
                 <p className="text-gray-600">Loading testimonials...</p>
               </div>
             ) : (
-              <div className="columns-1 md:columns-2 lg:columns-3 xl:columns-4 gap-6 space-y-6">
+              <div className="columns-1 sm:columns-2 lg:columns-3 gap-6 space-y-6">
                 {!Array.isArray(testimonials) || testimonials.length === 0 ? (
                   <div className="break-inside-avoid flex flex-col items-center justify-center py-20 text-center">
                     <div className="bg-gray-100 rounded-full p-8 mb-6">
