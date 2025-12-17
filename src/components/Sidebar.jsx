@@ -14,6 +14,7 @@ const Sidebar = ({
   const navigate = useNavigate();
   const location = useLocation();
   const [internalCollapsed, setInternalCollapsed] = useState(false);
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   
   // Use passed state if provided, otherwise use internal state
   const collapsed = isCollapsed !== undefined ? isCollapsed : internalCollapsed;
@@ -110,32 +111,83 @@ const Sidebar = ({
           {/* User Profile Section */}
           {!collapsed && (
             <div className="px-4 py-4">
-              <div className="bg-gradient-to-r from-teal-400 to-blue-500 rounded-lg p-4 flex items-center justify-between cursor-pointer hover:shadow-md transition-shadow">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-white overflow-hidden flex-shrink-0">
+              <div 
+                onClick={() => setProfileMenuOpen(!profileMenuOpen)}
+                className="bg-white rounded-lg p-3 flex items-center justify-between cursor-pointer hover:bg-gray-50 transition-all border border-gray-200 shadow-sm"
+              >
+                <div className="flex items-center gap-3 flex-1 min-w-0">
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-r from-teal-400 to-blue-500 overflow-hidden flex-shrink-0">
                     {user?.profilePicture ? (
                       <img src={user.profilePicture} alt={user.displayName} className="w-full h-full object-cover" />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center bg-gray-200 text-gray-600 font-semibold text-sm">
+                      <div className="w-full h-full flex items-center justify-center text-white font-semibold text-sm">
                         {(user?.displayName || user?.email || 'U').charAt(0).toUpperCase()}
                       </div>
                     )}
                   </div>
-                  <span className="text-white font-medium text-sm truncate">
-                    {user?.displayName || user?.email || 'User'}
-                  </span>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-gray-900 truncate">
+                      {user?.displayName || 'User'}
+                    </p>
+                    <p className="text-xs text-gray-500 truncate">
+                      {user?.email || ''}
+                    </p>
+                  </div>
                 </div>
-                <svg className="w-5 h-5 text-white flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                <svg 
+                  className={`w-4 h-4 text-gray-600 flex-shrink-0 transition-transform duration-200 ml-2 ${profileMenuOpen ? 'rotate-180' : ''}`}
+                  fill="none" 
+                  stroke="currentColor" 
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                 </svg>
               </div>
+              
+              {/* Profile Submenu */}
+              {profileMenuOpen && (
+                <div className="mt-2 bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden animate-fade-in-down">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setProfileMenuOpen(false);
+                      // navigate('/profile');
+                    }}
+                    className="w-full px-4 py-2.5 text-left text-sm text-gray-400 cursor-not-allowed flex items-center gap-3 hover:bg-gray-50 transition-colors"
+                  >
+                    <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                    My Profile
+                  </button>
+                  
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setProfileMenuOpen(false);
+                      // navigate('/settings');
+                    }}
+                    className="w-full px-4 py-2.5 text-left text-sm text-gray-400 cursor-not-allowed flex items-center gap-3 hover:bg-gray-50 transition-colors"
+                  >
+                    <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    Account Settings
+                  </button>
+                  
+                </div>
+              )}
             </div>
           )}
 
           {/* Collapsed User Profile */}
           {collapsed && (
             <div className="px-4 py-4 flex justify-center">
-              <div className="w-12 h-12 rounded-full bg-gradient-to-r from-teal-400 to-blue-500 overflow-hidden flex items-center justify-center cursor-pointer hover:shadow-md transition-shadow">
+              <div 
+                onClick={() => setProfileMenuOpen(!profileMenuOpen)}
+                className="w-12 h-12 rounded-full bg-gradient-to-r from-teal-400 to-blue-500 overflow-hidden flex items-center justify-center cursor-pointer hover:shadow-md transition-shadow relative"
+              >
                 {user?.profilePicture ? (
                   <img src={user.profilePicture} alt={user.displayName} className="w-full h-full object-cover" />
                 ) : (
@@ -176,7 +228,6 @@ const Sidebar = ({
                 {!collapsed && item.name}
               </button>
             ))}
-
             {/* Logout */}
             <button
               onClick={onLogout}
@@ -188,6 +239,7 @@ const Sidebar = ({
               </svg>
               {!collapsed && 'Logout'}
             </button>
+           
           </nav>
         </div>
       </aside>

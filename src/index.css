@@ -99,6 +99,21 @@
     }
   }
 
+  @keyframes fade-in-down {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-fade-in-down {
+    animation: fade-in-down 0.3s ease-out;
+  }
+
   .marker-highlight {
     background: linear-gradient(to bottom, transparent 0%, transparent 40%, #fef08a 40%, #fef08a 100%);
     padding: 0 0.2rem;
