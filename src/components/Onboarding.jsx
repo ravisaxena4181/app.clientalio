@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { apiService } from '../services/api';
 import { auth } from '../utils/auth';
 import logo from '../assets/logo_transbg.png';
+import Footer from './Footer';
 
 const Onboarding = () => {
   const [name, setName] = useState('');
@@ -221,13 +222,7 @@ const Onboarding = () => {
         </button>
 
         {/* Footer */}
-        <div className="text-center text-gray-500 text-xs mt-8">
-          Copyright © 2025{' '}
-          <a href="https://clientalio.com" className="text-primary hover:underline">
-            Clientalio
-          </a>
-          . All Rights Reserved.
-        </div>
+        <Footer />
       </div>
     </div>
   );

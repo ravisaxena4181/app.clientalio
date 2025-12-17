@@ -4,6 +4,7 @@ import { auth } from '../utils/auth';
 import { apiService } from '../services/api';
 import Sidebar from './Sidebar';
 import ProfileMenu from './ProfileMenu';
+import Footer from './Footer';
 
 const Embed = () => {
   const [user, setUser] = useState(null);
@@ -392,6 +393,7 @@ const Embed = () => {
             )}
           </div>
         </main>
+        <Footer />
       </div>
     </div>
   );

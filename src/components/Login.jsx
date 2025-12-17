@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { apiService } from '../services/api';
 import { auth } from '../utils/auth';
 import logo from '../assets/logo_transbg.png';
+import Footer from './Footer';
 
 const Login = () => {
   const [credentials, setCredentials] = useState({
@@ -148,10 +149,7 @@ const Login = () => {
         </div>
 
         {/* Footer */}
-        <div className="text-center text-gray-500 text-xs md:text-sm leading-relaxed mt-10">
-          © 2025 <a href="https://clientalio.com" className="text-primary hover:underline">Clientalio</a> All rights reserved.<br />
-          Developed with ❤️ in India by <a href="#" className="text-primary hover:underline">BWays Techno Solution</a>
-        </div>
+        <Footer />
       </div>
 
       {/* Right Section */}

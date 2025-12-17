@@ -4,6 +4,7 @@ import { auth } from '../utils/auth';
 import { apiService } from '../services/api';
 import Sidebar from './Sidebar';
 import ProfileMenu from './ProfileMenu';
+import Footer from './Footer';
 
 const Testimonials = () => {
   const [user, setUser] = useState(null);
@@ -367,6 +368,7 @@ const Testimonials = () => {
           )}
         </div>
       </main>
+        <Footer />
       </div>
     </div>
   );

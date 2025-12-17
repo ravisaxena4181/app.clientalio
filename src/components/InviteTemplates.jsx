@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { auth } from '../utils/auth';
 import Sidebar from './Sidebar';
 import ProfileMenu from './ProfileMenu';
+import Footer from './Footer';
 
 const InviteTemplates = () => {
   const [user, setUser] = useState(null);
@@ -178,6 +179,7 @@ const InviteTemplates = () => {
             </div>
           </div>
         </main>
+        <Footer />
       </div>
     </div>
   );

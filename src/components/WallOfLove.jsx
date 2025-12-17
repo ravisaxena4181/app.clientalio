@@ -4,6 +4,7 @@ import { auth } from '../utils/auth';
 import { apiService } from '../services/api';
 import Sidebar from './Sidebar';
 import ProfileMenu from './ProfileMenu';
+import Footer from './Footer';
 
 const WallOfLove = () => {
   const [user, setUser] = useState(null);
@@ -431,6 +432,7 @@ const WallOfLove = () => {
             )}
           </div>
         </main>
+        <Footer />
       </div>
     </div>
   );
