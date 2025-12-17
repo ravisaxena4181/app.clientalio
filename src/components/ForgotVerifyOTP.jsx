@@ -31,7 +31,7 @@ const ForgotVerifyOTP = () => {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [email, navigate]);
+  }, [email]);
 
   const formatTime = (seconds) => {
     const mins = Math.floor(seconds / 60);

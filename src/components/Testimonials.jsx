@@ -28,7 +28,7 @@ const Testimonials = () => {
     }
     setUser(userData);
     loadTestimonials(userData.userId);
-  }, [navigate]);
+  }, []);
 
   const loadTestimonials = async (userId) => {
     if (!userId) {

@@ -20,7 +20,7 @@ const InviteTemplates = () => {
       return;
     }
     setUser(userData);
-  }, [navigate]);
+  }, []);
 
   const handleLogout = () => {
     auth.logout();
