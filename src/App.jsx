@@ -8,6 +8,7 @@ import Dashboard from './components/Dashboard';
 import Testimonials from './components/Testimonials';
 import WallOfLove from './components/WallOfLove';
 import InviteTemplates from './components/InviteTemplates';
+import Embed from './components/Embed';
 import CollectTestimonial from './components/CollectTestimonial';
 import PrivateRoute from './components/PrivateRoute';
 import { auth } from './utils/auth';
@@ -61,6 +62,14 @@ function App() {
           element={
             <PrivateRoute>
               <InviteTemplates />
+            </PrivateRoute>
+          } 
+        />
+        <Route 
+          path="/embed" 
+          element={
+            <PrivateRoute>
+              <Embed />
             </PrivateRoute>
           } 
         />
