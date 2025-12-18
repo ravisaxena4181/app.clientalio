@@ -11,24 +11,34 @@ const GoogleSignInCallback = () => {
 
   useEffect(() => {
     const handleGoogleCallback = async () => {
-        console.log('Handling Google Sign-In callback');
+      console.log('Handling Google Sign-In callback');
+      console.log('Location hash:', location.hash);
+      console.log('Location search:', location.search);
 
       try {
-        // Get the credential from URL hash or query parameters
-        const params = new URLSearchParams(location.hash.replace('#', '?'));
-        const credential = params.get('id_token') || params.get('credential');
-        console.log('Received credential:', credential);
-        if (!credential) {
-          // Check query params as fallback
+        // Extract id_token from URL hash fragment
+        let credential = null;
+        
+        if (location.hash) {
+          const hashParams = new URLSearchParams(location.hash.substring(1));
+          credential = hashParams.get('id_token');
+          console.log('Extracted from hash:', credential);
+        }
+        
+        // Fallback to query params
+        if (!credential && location.search) {
           const queryParams = new URLSearchParams(location.search);
-          const queryCredential = queryParams.get('credential') || queryParams.get('id_token');
-          
-          if (!queryCredential) {
-            console.log('No credential found in URL');
-            setError('No credential found in URL');
-            setTimeout(() => navigate('/login'), 2000);
-            return;
-          }
+          credential = queryParams.get('id_token') || queryParams.get('credential');
+          console.log('Extracted from query:', credential);
+        }
+        
+        console.log('Final credential:', credential);
+        
+        if (!credential) {
+          console.error('No credential found in URL');
+          setError('No credential found. Please try again.');
+          setTimeout(() => navigate('/login'), 2000);
+          return;
         }
 
         // Verify token with Google's tokeninfo endpoint
