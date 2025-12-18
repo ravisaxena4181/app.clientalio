@@ -15,10 +15,33 @@ const Signup = () => {
   const [pageLoading, setPageLoading] = useState(true);
   const [googleLoaded, setGoogleLoaded] = useState(false);
   const [buttonRendered, setButtonRendered] = useState(false);
+  const [recaptchaToken, setRecaptchaToken] = useState(null);
+  const [recaptchaLoaded, setRecaptchaLoaded] = useState(false);
   const navigate = useNavigate();
   const hasFetchedRef = React.useRef(false);
   const googleButtonRef = React.useRef(null);
   const buttonRenderedRef = React.useRef(false);
+  const recaptchaRef = React.useRef(null);
+
+  // Global reCAPTCHA callbacks
+  React.useEffect(() => {
+    // Callback when user completes reCAPTCHA
+    window.onRecaptchaCallback = (token) => {
+      console.log('reCAPTCHA completed:', token);
+      setRecaptchaToken(token);
+    };
+    
+    // Callback when reCAPTCHA script loads
+    window.onRecaptchaLoadCallback = () => {
+      console.log('reCAPTCHA script loaded - ready to render');
+      setRecaptchaLoaded(true);
+    };
+    
+    return () => {
+      delete window.onRecaptchaCallback;
+      delete window.onRecaptchaLoadCallback;
+    };
+  }, []);
 
   // Define callback function for Google Sign-In
   const handleCredentialResponse = React.useCallback(async (response) => {
@@ -84,9 +107,19 @@ const Signup = () => {
     };
     document.body.appendChild(script);
 
+    // Load reCAPTCHA script dynamically
+    const recaptchaScript = document.createElement('script');
+    recaptchaScript.src = 'https://www.google.com/recaptcha/api.js?onload=onRecaptchaLoadCallback&render=explicit';
+    recaptchaScript.async = true;
+    recaptchaScript.defer = true;
+    document.body.appendChild(recaptchaScript);
+
     return () => {
       if (document.body.contains(script)) {
         document.body.removeChild(script);
+      }
+      if (document.body.contains(recaptchaScript)) {
+        document.body.removeChild(recaptchaScript);
       }
     };
   }, []);
@@ -109,6 +142,37 @@ const Signup = () => {
     }
   }, [googleLoaded, handleCredentialResponse]);
 
+  // Render reCAPTCHA widget when script is loaded and DOM is ready
+  useEffect(() => {
+    if (recaptchaLoaded && window.grecaptcha && window.grecaptcha.render) {
+      const container = document.getElementById('recaptcha-container');
+      console.log('Attempting to render reCAPTCHA...');
+      console.log('Container element:', container);
+      console.log('grecaptcha object:', window.grecaptcha);
+      
+      if (!container) {
+        console.error('reCAPTCHA container not found in DOM');
+        return;
+      }
+      
+      // Check if already rendered (has children)
+      if (container.children.length > 0) {
+        console.log('reCAPTCHA already rendered, skipping');
+        return;
+      }
+      
+      try {
+        const widgetId = window.grecaptcha.render('recaptcha-container', {
+          'sitekey': '6Lf4fi8sAAAAAHLv4A51kN1X614s3KQt89qOOIIL',
+          'callback': 'onRecaptchaCallback'
+        });
+        console.log('reCAPTCHA widget rendered successfully, widgetId:', widgetId);
+      } catch (error) {
+        console.error('Error rendering reCAPTCHA:', error);
+      }
+    }
+  }, [recaptchaLoaded]);
+
   const handleGoogleSignUpClick = () => {
     // Direct OAuth redirect flow (no FedCM restrictions)
     const clientId = '484877265494-112l66sk82fd08jatir3h16dtgn45d9u.apps.googleusercontent.com';
@@ -130,11 +194,28 @@ const Signup = () => {
       return;
     }
 
+    // Validate reCAPTCHA for all users
+    if (window.grecaptcha && recaptchaRef.current) {
+      const captchaToken = window.grecaptcha.getResponse();
+      console.log('reCAPTCHA token:', captchaToken);
+      if (!captchaToken) {
+        setError('Please complete the reCAPTCHA verification');
+        return;
+      }
+      console.log('reCAPTCHA verified');
+    } else {
+      setError('reCAPTCHA not loaded. Please refresh the page.');
+      //return;
+    }
+
     setLoading(true);
 
     try {
       // Get client IP and location info
       const clientInfo = await getClientInfo();
+      
+      // Get reCAPTCHA token
+      const captchaToken = window.grecaptcha.getResponse();
 
       // Prepare registration data matching API requirements
       const registrationData = {
@@ -154,8 +235,9 @@ const Signup = () => {
           ? `${clientInfo.city}, ${clientInfo.country}` 
           : clientInfo.country || null,
         CountryId: clientInfo.countryCode || null,
+        recaptchaToken: captchaToken, // Include reCAPTCHA token for backend verification
       };
-
+      console.log('Registration data:', registrationData);
       const response = await apiService.registerEmail(registrationData);
       console.log(response);
       if (response.success) {
@@ -163,9 +245,17 @@ const Signup = () => {
         navigate('/verify', { state: { email: email } });
       } else {
         setError(response.message || 'Registration failed');
+        // Reset reCAPTCHA on error if it was used
+        if (window.grecaptcha && recaptchaRef.current) {
+          window.grecaptcha.reset();
+        }
       }
     } catch (err) {
       setError(err || 'Registration failed. Please try again.');
+      // Reset reCAPTCHA on error if it was used
+      if (window.grecaptcha && recaptchaRef.current) {
+        window.grecaptcha.reset();
+      }
     } finally {
       setLoading(false);
     }
@@ -236,6 +326,18 @@ const Signup = () => {
                   </a>
                   .
                 </label>
+              </div>
+
+              {/* reCAPTCHA for all users */}
+              <div className="flex justify-center my-4">
+                <div 
+                  id="recaptcha-container"
+                  style={{minHeight: '78px', minWidth: '304px'}}
+                ></div>
+              </div>
+              {/* Debug info */}
+              <div className="text-xs text-gray-500 text-center mb-2">
+                {recaptchaLoaded ? '✓ reCAPTCHA loaded' : '⏳ Loading reCAPTCHA...'}
               </div>
 
               <button 
