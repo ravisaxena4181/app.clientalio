@@ -72,7 +72,7 @@ const Signup = () => {
         setError(result.message || 'Google sign-in failed');
       }
     } catch (err) {
-      setError(err || 'Google sign-in failed. Please try again.');
+      setError(err?.message || err?.toString() || 'Google sign-in failed. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -145,9 +145,9 @@ const Signup = () => {
 
   // Render reCAPTCHA widget when script is loaded and DOM is ready
   useEffect(() => {
-    // Only render for Indian users
-    if (!ipInfo || ipInfo.countryCode !== 'IN') {
-      console.log('reCAPTCHA not required for non-IN users');
+    // Only render for NON-Indian users
+    if (!ipInfo || ipInfo.countryCode === 'IN') {
+      console.log('reCAPTCHA not required for Indian users');
       return;
     }
     
@@ -205,8 +205,8 @@ const Signup = () => {
     const clientInfo = ipInfo;
 
     console.log('reCAPTCHA loaded:',clientInfo.countryCode , recaptchaLoaded, 'widgetId:', recaptchaWidgetId);
-    // Validate reCAPTCHA for all users
-    if (clientInfo.countryCode === 'IN') {
+    // Validate reCAPTCHA for NON-Indian users
+    if (clientInfo.countryCode !== 'IN') {
       if (window.grecaptcha && recaptchaWidgetId !== null) {
         const captchaToken = window.grecaptcha.getResponse(recaptchaWidgetId);
         console.log('reCAPTCHA token:', captchaToken);
@@ -223,9 +223,10 @@ const Signup = () => {
     setLoading(true);
 
     try {
-
-      // Get reCAPTCHA token
-      const captchaToken = window.grecaptcha.getResponse(recaptchaWidgetId);
+      // Get reCAPTCHA token only for non-Indian users
+      const captchaToken = (clientInfo.countryCode !== 'IN' && window.grecaptcha && recaptchaWidgetId !== null)
+        ? window.grecaptcha.getResponse(recaptchaWidgetId)
+        : null;
 
       // Prepare registration data matching API requirements
       const registrationData = {
@@ -256,15 +257,15 @@ const Signup = () => {
       } else {
         setError(response.message || 'Registration failed');
         // Reset reCAPTCHA on error if it was used
-        if (window.grecaptcha && recaptchaRef.current) {
-          window.grecaptcha.reset();
+        if (window.grecaptcha && recaptchaWidgetId !== null) {
+          window.grecaptcha.reset(recaptchaWidgetId);
         }
       }
     } catch (err) {
-      setError(err || 'Registration failed. Please try again.');
+      setError(err?.message || err?.toString() || 'Registration failed. Please try again.');
       // Reset reCAPTCHA on error if it was used
-      if (window.grecaptcha && recaptchaRef.current) {
-        window.grecaptcha.reset();
+      if (window.grecaptcha && recaptchaWidgetId !== null) {
+        window.grecaptcha.reset(recaptchaWidgetId);
       }
     } finally {
       setLoading(false);
@@ -338,8 +339,8 @@ const Signup = () => {
                 </label>
               </div>
 
-              {/* reCAPTCHA for Indian users only */}
-              {ipInfo && ipInfo.countryCode === 'IN' && (
+              {/* reCAPTCHA for NON-Indian users only */}
+              {ipInfo && ipInfo.countryCode !== 'IN' && (
                 <div className="flex justify-center my-4">
                   <div
                     id="recaptcha-container"
