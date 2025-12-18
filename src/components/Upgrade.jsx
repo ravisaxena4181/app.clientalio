@@ -56,15 +56,140 @@ const Upgrade = () => {
     navigate('/login');
   };
 
-  const handleUpgrade = (plan) => {
+  const handleUpgrade = async (plan) => {
     // Handle upgrade logic here
     const selectedPlanCode = billingPeriod === 'monthly' ? plan.planCode : plan.planCodeYearly;
+    const displayPrice = billingPeriod === 'annual' && plan.discountedPrice ? plan.discountedPrice : plan.price;
+    
     console.log('Upgrading to:', plan.planName);
     console.log('Selected plan code:', selectedPlanCode);
     console.log('Billing period:', billingPeriod);
-    alert('Yearly billing is not available for this plan.'+selectedPlanCode);
-     
-    // You can navigate to payment page or open modal
+    console.log('Currency Code:', plan.currencyCode);
+
+    if (!selectedPlanCode) {
+      alert('Plan code not available for the selected billing period.');
+      return;
+    }
+
+    // Check currency and integrate appropriate payment gateway
+    if (plan.currencyCode === 'INR') {
+      // Razorpay Integration for INR
+      initRazorpay(plan, selectedPlanCode, displayPrice);
+    } else {
+      // Stripe Integration for other currencies
+      initStripe(plan, selectedPlanCode, displayPrice);
+    }
+  };
+
+  const initRazorpay = (plan, planCode, amount) => {
+    // Load Razorpay script if not already loaded
+    const loadRazorpayScript = () => {
+      return new Promise((resolve) => {
+        const script = document.createElement('script');
+        script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+        script.onload = () => resolve(true);
+        script.onerror = () => resolve(false);
+        document.body.appendChild(script);
+      });
+    };
+
+    loadRazorpayScript().then((loaded) => {
+      if (!loaded) {
+        alert('Failed to load Razorpay SDK. Please check your internet connection.');
+        return;
+      }
+
+      const options = {
+        key: import.meta.env.VITE_RAZORPAY_KEY || 'rzp_test_ZfP2RmJbRoCyy2', // Add your Razorpay key
+        amount: amount * 100, // Razorpay accepts amount in paise
+        currency: plan.currencyCode || 'INR',
+        name: 'Clientalio',
+        description: `${plan.planName} - ${billingPeriod === 'annual' ? 'Yearly' : 'Monthly'} Plan`,
+        handler: function (response) {
+          console.log('Razorpay Payment Success:', response);
+          // Handle success - call your backend to verify payment
+          alert(`Payment successful! Payment ID: ${response.razorpay_payment_id}`);
+          // You can call API to update subscription status here
+        },
+        prefill: {
+          name: user?.displayName || '',
+          email: user?.email || '',
+        },
+        notes: {
+          planCode: planCode,
+          billingPeriod: billingPeriod,
+        },
+        theme: {
+          color: '#3399cc',
+        },
+        modal: {
+          ondismiss: function () {
+            console.log('Razorpay payment cancelled');
+          },
+        },
+      };
+
+      const razorpay = new window.Razorpay(options);
+      razorpay.open();
+    });
+  };
+
+  const initStripe = async (plan, planCode, amount) => {
+    // Load Stripe script if not already loaded
+    const loadStripeScript = () => {
+      return new Promise((resolve) => {
+        if (window.Stripe) {
+          resolve(true);
+          return;
+        }
+        const script = document.createElement('script');
+        script.src = 'https://js.stripe.com/v3/';
+        script.onload = () => resolve(true);
+        script.onerror = () => resolve(false);
+        document.body.appendChild(script);
+      });
+    };
+
+    const loaded = await loadStripeScript();
+    if (!loaded) {
+      alert('Failed to load Stripe SDK. Please check your internet connection.');
+      return;
+    }
+
+    // Initialize Stripe
+    const stripe = window.Stripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || 'YOUR_STRIPE_PUBLISHABLE_KEY');
+
+    try {
+      // Call your backend to create a checkout session
+      // This is a placeholder - you need to implement your backend endpoint
+      const response = await fetch('/api/create-checkout-session', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${auth.getToken()}`,
+        },
+        body: JSON.stringify({
+          planCode: planCode,
+          billingPeriod: billingPeriod,
+          amount: amount,
+          currency: plan.currencyCode || 'USD',
+        }),
+      });
+
+      const session = await response.json();
+
+      // Redirect to Stripe Checkout
+      const result = await stripe.redirectToCheckout({
+        sessionId: session.id,
+      });
+
+      if (result.error) {
+        alert(result.error.message);
+      }
+    } catch (error) {
+      console.error('Stripe error:', error);
+      alert('Failed to initialize payment. Please try again.');
+    }
   };
 
   const getPlanColor = (planName) => {
