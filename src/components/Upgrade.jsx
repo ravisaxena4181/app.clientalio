@@ -56,9 +56,14 @@ const Upgrade = () => {
     navigate('/login');
   };
 
-  const handleUpgrade = (planName) => {
+  const handleUpgrade = (plan) => {
     // Handle upgrade logic here
-    console.log('Upgrading to:', planName);
+    const selectedPlanCode = billingPeriod === 'monthly' ? plan.planCode : plan.planCodeYearly;
+    console.log('Upgrading to:', plan.planName);
+    console.log('Selected plan code:', selectedPlanCode);
+    console.log('Billing period:', billingPeriod);
+    alert('Yearly billing is not available for this plan.'+selectedPlanCode);
+     
     // You can navigate to payment page or open modal
   };
 
@@ -249,7 +254,7 @@ const Upgrade = () => {
 
                         {/* Action Button */}
                         <button
-                          onClick={() => !isCurrentPlan && !isDisabled && handleUpgrade(plan.planName)}
+                          onClick={() => !isCurrentPlan && !isDisabled && handleUpgrade(plan)}
                           disabled={isCurrentPlan || (isDisabled && !isCurrentPlan) || !canDowngrade}
                           className={`w-full py-3 px-4 rounded-lg font-semibold transition-all duration-200 mb-6 ${getButtonClass(plan.planName, isCurrentPlan)}`}
                         >
