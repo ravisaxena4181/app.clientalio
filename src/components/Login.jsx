@@ -13,45 +13,14 @@ const Login = () => {
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [googleLoaded, setGoogleLoaded] = useState(false);
+  const [buttonRendered, setButtonRendered] = useState(false);
   const navigate = useNavigate();
-
-  useEffect(() => {
-    // Load Google Sign-In script
-    const script = document.createElement('script');
-    script.src = 'https://accounts.google.com/gsi/client';
-    script.async = true;
-    script.defer = true;
-    script.onload = () => {
-      // Initialize Google Sign-In after script loads
-      if (window.google) {
-        window.google.accounts.id.initialize({
-          client_id: '484877265494-112l66sk82fd08jatir3h16dtgn45d9u.apps.googleusercontent.com',
-          callback: handleCredentialResponse,
-        });
-        
-        // Render the Google Sign-In button
-        window.google.accounts.id.renderButton(
-          document.getElementById('googleSignInButton'),
-          { 
-            theme: 'outline', 
-            size: 'large',
-            width: '100%',
-            text: 'signin_with',
-          }
-        );
-      }
-    };
-    document.body.appendChild(script);
-
-    return () => {
-      if (document.body.contains(script)) {
-        document.body.removeChild(script);
-      }
-    };
-  }, []);
+  const googleButtonRef = React.useRef(null);
+  const buttonRenderedRef = React.useRef(false);
 
   // Define callback function
-  const handleCredentialResponse = async (response) => {
+  const handleCredentialResponse = React.useCallback(async (response) => {
     try {
       setLoading(true);
       setError('');
@@ -82,7 +51,75 @@ const Login = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [navigate]);
+
+  useEffect(() => {
+    // Load Google Sign-In script
+    const script = document.createElement('script');
+    script.src = 'https://accounts.google.com/gsi/client';
+    script.async = true;
+    script.defer = true;
+    script.onload = () => {
+      setGoogleLoaded(true);
+    };
+    document.body.appendChild(script);
+
+    return () => {
+      if (document.body.contains(script)) {
+        document.body.removeChild(script);
+      }
+    };
+  }, []);
+
+  // Render Google button after script loads
+  useEffect(() => {
+    if (googleLoaded && googleButtonRef.current && window.google && !buttonRenderedRef.current) {
+      console.log('Rendering Google Sign-In button');
+      
+      // Wait a bit to ensure DOM is fully ready
+      const renderButton = () => {
+        try {
+          if (!googleButtonRef.current) {
+            console.error('Button ref not available');
+            return;
+          }
+
+          window.google.accounts.id.initialize({
+            client_id: '484877265494-112l66sk82fd08jatir3h16dtgn45d9u.apps.googleusercontent.com',
+            callback: handleCredentialResponse,
+          });
+          
+          const width = googleButtonRef.current.offsetWidth || 400;
+          console.log('Rendering button with width:', width);
+          
+          window.google.accounts.id.renderButton(
+            googleButtonRef.current,
+            { 
+              theme: 'outline', 
+              size: 'large',
+              width: width,
+              text: 'signin_with',
+            }
+          );
+          buttonRenderedRef.current = true;
+          setButtonRendered(true);
+          console.log('Google button rendered successfully');
+        } catch (error) {
+          console.error('Error rendering Google button:', error);
+          // Retry once after a delay
+          if (!buttonRenderedRef.current) {
+            setTimeout(() => {
+              console.log('Retrying Google button render...');
+              renderButton();
+            }, 1000);
+          }
+        }
+      };
+
+      // Small delay to ensure element is fully laid out
+      setTimeout(renderButton, 100);
+    }
+  }, [googleLoaded, handleCredentialResponse]);
 
   const handleChange = (e) => {
     setCredentials({
@@ -137,7 +174,14 @@ const Login = () => {
         <div className="flex-1 flex items-center justify-center">
           <div className="w-full max-w-md">
             {/* Google Sign In */}
-            <div id="googleSignInButton" className="w-full mb-5"></div>
+            <div className="w-full mb-5 min-h-[44px] relative">
+              {!buttonRendered && googleLoaded && (
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="text-gray-400 text-sm">Loading Google Sign-In...</div>
+                </div>
+              )}
+              <div ref={googleButtonRef} className="w-full"></div>
+            </div>
 
             {/* Divider */}
             <div className="relative text-center my-6">

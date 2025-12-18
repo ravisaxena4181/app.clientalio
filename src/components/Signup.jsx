@@ -14,12 +14,14 @@ const Signup = () => {
   const [ipInfo, setIpInfo] = useState(null);
   const [pageLoading, setPageLoading] = useState(true);
   const [googleLoaded, setGoogleLoaded] = useState(false);
+  const [buttonRendered, setButtonRendered] = useState(false);
   const navigate = useNavigate();
   const hasFetchedRef = React.useRef(false);
   const googleButtonRef = React.useRef(null);
+  const buttonRenderedRef = React.useRef(false);
 
   // Define callback function for Google Sign-In
-  const handleCredentialResponse = async (response) => {
+  const handleCredentialResponse = React.useCallback(async (response) => {
     try {
       setLoading(true);
       setError('');
@@ -50,7 +52,7 @@ const Signup = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [navigate]);
 
   useEffect(() => {
     // Prevent duplicate API calls in React Strict Mode
@@ -91,28 +93,53 @@ const Signup = () => {
 
   // Render Google button after script loads and DOM is ready
   useEffect(() => {
-    if (googleLoaded && googleButtonRef.current && window.google) {
+    if (googleLoaded && googleButtonRef.current && window.google && !buttonRenderedRef.current) {
       console.log('Rendering Google Sign-In button');
-      try {
-        window.google.accounts.id.initialize({
-          client_id: '484877265494-112l66sk82fd08jatir3h16dtgn45d9u.apps.googleusercontent.com',
-          callback: handleCredentialResponse,
-        });
-        
-        window.google.accounts.id.renderButton(
-          googleButtonRef.current,
-          { 
-            theme: 'outline', 
-            size: 'large',
-            width: googleButtonRef.current.offsetWidth,
-            text: 'signup_with',
+      
+      // Wait a bit to ensure DOM is fully ready
+      const renderButton = () => {
+        try {
+          if (!googleButtonRef.current) {
+            console.error('Button ref not available');
+            return;
           }
-        );
-      } catch (error) {
-        console.error('Error rendering Google button:', error);
-      }
+
+          window.google.accounts.id.initialize({
+            client_id: '484877265494-112l66sk82fd08jatir3h16dtgn45d9u.apps.googleusercontent.com',
+            callback: handleCredentialResponse,
+          });
+          
+          const width = googleButtonRef.current.offsetWidth || 400;
+          console.log('Rendering button with width:', width);
+          
+          window.google.accounts.id.renderButton(
+            googleButtonRef.current,
+            { 
+              theme: 'outline', 
+              size: 'large',
+              width: width,
+              text: 'signup_with',
+            }
+          );
+          buttonRenderedRef.current = true;
+          setButtonRendered(true);
+          console.log('Google button rendered successfully');
+        } catch (error) {
+          console.error('Error rendering Google button:', error);
+          // Retry once after a delay
+          if (!buttonRenderedRef.current) {
+            setTimeout(() => {
+              console.log('Retrying Google button render...');
+              renderButton();
+            }, 1000);
+          }
+        }
+      };
+
+      // Small delay to ensure element is fully laid out
+      setTimeout(renderButton, 100);
     }
-  }, [googleLoaded]);
+  }, [googleLoaded, handleCredentialResponse]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -257,7 +284,14 @@ const Signup = () => {
             </div>
 
             {/* Google Sign In */}
-            <div ref={googleButtonRef} className="w-full mb-5"></div>
+            <div className="w-full mb-5 min-h-[44px] relative">
+              {!buttonRendered && googleLoaded && (
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="text-gray-400 text-sm">Loading Google Sign-In...</div>
+                </div>
+              )}
+              <div ref={googleButtonRef} className="w-full"></div>
+            </div>
           </div>
         </div>
 
