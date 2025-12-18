@@ -145,6 +145,12 @@ const Signup = () => {
 
   // Render reCAPTCHA widget when script is loaded and DOM is ready
   useEffect(() => {
+    // Only render for Indian users
+    if (!ipInfo || ipInfo.countryCode !== 'IN') {
+      console.log('reCAPTCHA not required for non-IN users');
+      return;
+    }
+    
     if (recaptchaLoaded && window.grecaptcha && window.grecaptcha.render) {
       const container = document.getElementById('recaptcha-container');
       console.log('Attempting to render reCAPTCHA...');
@@ -164,7 +170,7 @@ const Signup = () => {
 
       try {
         const widgetId = window.grecaptcha.render('recaptcha-container', {
-          'sitekey': '6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI',
+          'sitekey': '6Lf4fi8sAAAAAHLv4A51kN1X614s3KQt89qOOIIL',
           'callback': 'onRecaptchaCallback'
         });
         setRecaptchaWidgetId(widgetId);
@@ -173,7 +179,7 @@ const Signup = () => {
         console.error('Error rendering reCAPTCHA:', error);
       }
     }
-  }, [recaptchaLoaded]);
+  }, [recaptchaLoaded, ipInfo]);
 
   const handleGoogleSignUpClick = () => {
     // Direct OAuth redirect flow (no FedCM restrictions)
@@ -332,17 +338,15 @@ const Signup = () => {
                 </label>
               </div>
 
-              {/* reCAPTCHA for all users */}
-              <div className="flex justify-center my-4">
-                <div
-                  id="recaptcha-container"
-                  style={{ minHeight: '78px', minWidth: '304px' }}
-                ></div>
-              </div>
-              {/* Debug info */}
-              {/* <div className="text-xs text-gray-500 text-center mb-2">
-                {recaptchaLoaded ? '✓ reCAPTCHA loaded' : '⏳ Loading reCAPTCHA...'}
-              </div> */}
+              {/* reCAPTCHA for Indian users only */}
+              {ipInfo && ipInfo.countryCode === 'IN' && (
+                <div className="flex justify-center my-4">
+                  <div
+                    id="recaptcha-container"
+                    style={{ minHeight: '78px', minWidth: '304px' }}
+                  ></div>
+                </div>
+              )}
 
               <button
                 type="submit"
