@@ -72,7 +72,7 @@ const Upgrade = () => {
     }
 
     // Check currency and integrate appropriate payment gateway
-    if (plan.currencyCode === 'INR') {
+    if (plan.currencyCode !== 'INR') {
       // Razorpay Integration for INR
       initRazorpay(plan, selectedPlanCode, displayPrice);
     } else {
@@ -135,6 +135,12 @@ const Upgrade = () => {
   };
 
   const initStripe = async (plan, planCode, amount) => {
+    // TODO: Stripe integration requires backend endpoint
+    // For now, show a notification that this feature is coming soon
+    alert(`Stripe payment integration is currently under development.\n\nPlan: ${plan.planName}\nAmount: ${plan.currencyCode || 'USD'} ${amount}\nBilling: ${billingPeriod === 'annual' ? 'Yearly' : 'Monthly'}\n\nPlease contact support or use a plan with INR currency for Razorpay payment.`);
+    return;
+    
+     /*Uncomment this code when backend endpoint is ready
     // Load Stripe script if not already loaded
     const loadStripeScript = () => {
       return new Promise((resolve) => {
@@ -157,12 +163,11 @@ const Upgrade = () => {
     }
 
     // Initialize Stripe
-    const stripe = window.Stripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || 'YOUR_STRIPE_PUBLISHABLE_KEY');
+    const stripe = window.Stripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 
     try {
       // Call your backend to create a checkout session
-      // This is a placeholder - you need to implement your backend endpoint
-      const response = await fetch('/api/create-checkout-session', {
+      const response = await fetch('/api/v1/create-checkout-session', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -175,6 +180,10 @@ const Upgrade = () => {
           currency: plan.currencyCode || 'USD',
         }),
       });
+
+      if (!response.ok) {
+        throw new Error('Failed to create checkout session');
+      }
 
       const session = await response.json();
 
@@ -190,6 +199,7 @@ const Upgrade = () => {
       console.error('Stripe error:', error);
       alert('Failed to initialize payment. Please try again.');
     }
+    */
   };
 
   const getPlanColor = (planName) => {
