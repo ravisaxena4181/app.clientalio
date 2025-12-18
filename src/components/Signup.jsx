@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { apiService } from '../services/api';
+import { auth } from '../utils/auth';
 import { getClientInfo } from '../utils/geolocation';
 import logo from '../assets/logo_transbg.png';
 import Footer from './Footer';
@@ -12,8 +13,44 @@ const Signup = () => {
   const [loading, setLoading] = useState(false);
   const [ipInfo, setIpInfo] = useState(null);
   const [pageLoading, setPageLoading] = useState(true);
+  const [googleLoaded, setGoogleLoaded] = useState(false);
   const navigate = useNavigate();
   const hasFetchedRef = React.useRef(false);
+  const googleButtonRef = React.useRef(null);
+
+  // Define callback function for Google Sign-In
+  const handleCredentialResponse = async (response) => {
+    try {
+      setLoading(true);
+      setError('');
+      
+      // Get client info (IP address, location, etc.)
+      const clientInfo = await getClientInfo();
+      
+      // Send the credential to your backend
+      const result = await apiService.googleSignIn({ credential: response.credential }, clientInfo);
+      
+      if (result.success && result.data && result.data.token) {
+        auth.setToken(result.data.token);
+        auth.setUser({
+          userId: result.data.userId,
+          email: result.data.email,
+          userName: result.data.userName,
+          displayName: result.data.displayName,
+          userRole: result.data.userRole,
+          profilePicture: result.data.profilePicture,
+          userType: result.data.userType
+        });
+        navigate('/dashboard');
+      } else {
+        setError(result.message || 'Google sign-in failed');
+      }
+    } catch (err) {
+      setError(err || 'Google sign-in failed. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     // Prevent duplicate API calls in React Strict Mode
@@ -33,7 +70,49 @@ const Signup = () => {
       }
     };
     fetchIpInfo();
+
+    // Load Google Sign-In script
+    const script = document.createElement('script');
+    script.src = 'https://accounts.google.com/gsi/client';
+    script.async = true;
+    script.defer = true;
+    script.onload = () => {
+      console.log('Google Sign-In script loaded');
+      setGoogleLoaded(true);
+    };
+    document.body.appendChild(script);
+
+    return () => {
+      if (document.body.contains(script)) {
+        document.body.removeChild(script);
+      }
+    };
   }, []);
+
+  // Render Google button after script loads and DOM is ready
+  useEffect(() => {
+    if (googleLoaded && googleButtonRef.current && window.google) {
+      console.log('Rendering Google Sign-In button');
+      try {
+        window.google.accounts.id.initialize({
+          client_id: '484877265494-112l66sk82fd08jatir3h16dtgn45d9u.apps.googleusercontent.com',
+          callback: handleCredentialResponse,
+        });
+        
+        window.google.accounts.id.renderButton(
+          googleButtonRef.current,
+          { 
+            theme: 'outline', 
+            size: 'large',
+            width: googleButtonRef.current.offsetWidth,
+            text: 'signup_with',
+          }
+        );
+      } catch (error) {
+        console.error('Error rendering Google button:', error);
+      }
+    }
+  }, [googleLoaded]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -86,7 +165,8 @@ const Signup = () => {
   };
 
   const handleGoogleSignIn = () => {
-    console.log('Google sign-in clicked');
+    // This function is no longer needed as the button is auto-rendered
+    console.log('Google button clicked');
   };
 
   if (pageLoading) {
@@ -177,19 +257,7 @@ const Signup = () => {
             </div>
 
             {/* Google Sign In */}
-            <button 
-              type="button" 
-              className="btn btn-google w-full mb-5" 
-              onClick={handleGoogleSignIn}
-            >
-              <svg width="20" height="20" viewBox="0 0 20 20">
-                <path fill="#4285F4" d="M19.6 10.23c0-.82-.07-1.43-.22-2.05H10v3.72h5.5c-.11.94-.68 2.35-1.97 3.3l-.02.13 2.87 2.22.2.02c1.82-1.68 2.87-4.15 2.87-7.08z"/>
-                <path fill="#34A853" d="M10 20c2.7 0 4.96-.89 6.62-2.42l-3.05-2.37c-.83.56-1.9.94-3.57.94-2.74 0-5.06-1.79-5.89-4.25l-.12.01-2.99 2.31-.04.11C2.62 17.47 6.03 20 10 20z"/>
-                <path fill="#FBBC05" d="M4.11 11.9c-.21-.62-.33-1.29-.33-1.97s.12-1.35.32-1.97l-.01-.14-3.02-2.35-.1.05C.35 7.36 0 8.63 0 10s.35 2.64.97 3.83l3.14-2.43z"/>
-                <path fill="#EB4335" d="M10 3.88c1.93 0 3.23.84 3.97 1.54l2.97-2.9C15.95.99 13.7 0 10 0 6.03 0 2.62 2.53.97 6.17l3.14 2.43C4.94 5.67 7.26 3.88 10 3.88z"/>
-              </svg>
-              Sign in as Ravi
-            </button>
+            <div ref={googleButtonRef} className="w-full mb-5"></div>
           </div>
         </div>
 

@@ -123,12 +123,7 @@ const Login = () => {
       setLoading(false);
     }
   };
-
-  const handleGoogleSignIn = () => {
-    // This function is no longer needed as the button is auto-rendered
-    console.log('Google button clicked');
-  };
-
+ 
   return (
     <div className="flex min-h-screen bg-gray-50">
       {/* Left Section */}
