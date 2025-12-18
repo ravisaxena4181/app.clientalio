@@ -193,9 +193,9 @@ const Signup = () => {
       setError('Please agree to the Terms and Privacy Policy');
       return;
     }
-
+    console.log('reCAPTCHA  loaded .',window.grecaptcha , recaptchaRef.current);
     // Validate reCAPTCHA for all users
-    if (window.grecaptcha && recaptchaRef.current) {
+    if (window.grecaptcha) {
       const captchaToken = window.grecaptcha.getResponse();
       console.log('reCAPTCHA token:', captchaToken);
       if (!captchaToken) {
@@ -205,7 +205,7 @@ const Signup = () => {
       console.log('reCAPTCHA verified');
     } else {
       setError('reCAPTCHA not loaded. Please refresh the page.');
-      //return;
+      return;
     }
 
     setLoading(true);
