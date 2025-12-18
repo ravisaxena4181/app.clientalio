@@ -263,6 +263,20 @@ export const apiService = {
       throw typeof message === 'string' ? message : JSON.stringify(message);
     }
   },
+
+  // Get Subscription Plans
+  getSubscriptionPlans: async () => {
+    try {
+      const response = await api.get('/Customer/SubscriptionsPlans');
+      return response.data;
+    } catch (error) {
+      const message = error.response?.data?.message || 
+                      error.response?.data?.error || 
+                      error.response?.data || 
+                      'Failed to fetch subscription plans.';
+      throw typeof message === 'string' ? message : JSON.stringify(message);
+    }
+  },
 };
 
 export default api;

@@ -14,6 +14,7 @@ import InviteTemplates from './components/InviteTemplates';
 import Embed from './components/Embed';
 import CollectTestimonial from './components/CollectTestimonial';
 import GoogleSignInCallback from './components/GoogleSignInCallback';
+import Upgrade from './components/Upgrade';
 import PrivateRoute from './components/PrivateRoute';
 import { auth } from './utils/auth';
 
@@ -98,6 +99,14 @@ function App() {
           element={
             <PrivateRoute>
               <CollectTestimonial />
+            </PrivateRoute>
+          } 
+        />
+        <Route 
+          path="/upgrade" 
+          element={
+            <PrivateRoute>
+              <Upgrade />
             </PrivateRoute>
           } 
         />
