@@ -103,18 +103,22 @@ const Upgrade = () => {
   };
 
   return (
-    <div className="flex h-screen overflow-hidden bg-gray-50">
+    <div className="min-h-screen bg-gray-50">
       {/* Sidebar */}
       <Sidebar
+        user={user}
         sidebarOpen={sidebarOpen}
         setSidebarOpen={setSidebarOpen}
         sidebarCollapsed={sidebarCollapsed}
         setSidebarCollapsed={setSidebarCollapsed}
+        onLogout={handleLogout}
         activePage="upgrade"
+        isCollapsed={sidebarCollapsed}
+        setIsCollapsed={setSidebarCollapsed}
       />
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className={`transition-all duration-300 ${sidebarCollapsed ? 'lg:pl-20' : 'lg:pl-64'}`}>
         {/* Header */}
         <HeaderNav
           user={user}
@@ -128,8 +132,8 @@ const Upgrade = () => {
         />
 
         {/* Page Content */}
-        <main className="flex-1 overflow-y-auto bg-gray-50">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <main className="py-8">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             {/* Header */}
             <div className="mb-8">
               <div className="flex items-center justify-between mb-2">
