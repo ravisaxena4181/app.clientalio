@@ -128,33 +128,32 @@ const ForgotPassword = () => {
                 Sign In
               </a>
             </div>
-
-            {/* IP and Location Info */}
-            {ipInfo && (
-              <div className="mt-8 pt-6 border-t border-gray-200">
-                <div className="flex items-center justify-center gap-6 text-sm text-gray-500">
-                  <div className="flex items-center gap-2">
-                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM4.332 8.027a6.012 6.012 0 011.912-2.706C6.512 5.73 6.974 6 7.5 6A1.5 1.5 0 019 7.5V8a2 2 0 004 0 2 2 0 011.523-1.943A5.977 5.977 0 0116 10c0 .34-.028.675-.083 1H15a2 2 0 00-2 2v.878A2.001 2.001 0 0112.5 16H12v-1a1 1 0 00-1-1H9v-1a1 1 0 00-1-1H6.5a1 1 0 00-1 1v1a1 1 0 01-1 1h-.5A5.981 5.981 0 014 10c0-.65.134-1.27.332-1.973z" clipRule="evenodd" />
-                    </svg>
-                    <span>{ipInfo.ip}</span>
-                  </div>
-                  {ipInfo.city && ipInfo.country && (
-                    <div className="flex items-center gap-2">
-                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
-                      </svg>
-                      <span>{ipInfo.city}, {ipInfo.country}</span>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
           </div>
         </div>
 
         {/* Footer */}
         <Footer />
+        {ipInfo && (
+          <div className="flex items-center justify-center gap-4 text-xs text-gray-400 mt-2">
+            <div className="flex items-center gap-1.5">
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+              </svg>
+              <span>IP: {ipInfo.ip || 'Unknown'}</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+              <span>
+                {ipInfo.city && ipInfo.country 
+                  ? `${ipInfo.city}, ${ipInfo.country}` 
+                  : ipInfo.country || 'Unknown location'}
+              </span>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Right Section */}

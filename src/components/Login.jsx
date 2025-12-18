@@ -15,6 +15,7 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const [googleLoaded, setGoogleLoaded] = useState(false);
   const [buttonRendered, setButtonRendered] = useState(false);
+  const [ipInfo, setIpInfo] = useState(null);
   const navigate = useNavigate();
   const googleButtonRef = React.useRef(null);
   const buttonRenderedRef = React.useRef(false);
@@ -63,6 +64,18 @@ const Login = () => {
       setGoogleLoaded(true);
     };
     document.body.appendChild(script);
+
+    // Fetch IP and location info
+    const fetchIpInfo = async () => {
+      try {
+        const clientInfo = await getClientInfo();
+        console.log('Client Info:', clientInfo);
+        setIpInfo(clientInfo);
+      } catch (err) {
+        console.error('Failed to fetch IP info:', err);
+      }
+    };
+    fetchIpInfo();
 
     return () => {
       if (document.body.contains(script)) {
@@ -239,6 +252,27 @@ const Login = () => {
 
         {/* Footer */}
         <Footer />
+        {ipInfo && (
+          <div className="flex items-center justify-center gap-4 text-xs text-gray-400 mt-2">
+            <div className="flex items-center gap-1.5">
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+              </svg>
+              <span>IP: {ipInfo.ip || 'Unknown'}</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+              <span>
+                {ipInfo.city && ipInfo.country 
+                  ? `${ipInfo.city}, ${ipInfo.country}` 
+                  : ipInfo.country || 'Unknown location'}
+              </span>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Right Section */}
