@@ -17,6 +17,7 @@ const Signup = () => {
   const [buttonRendered, setButtonRendered] = useState(false);
   const [recaptchaToken, setRecaptchaToken] = useState(null);
   const [recaptchaLoaded, setRecaptchaLoaded] = useState(false);
+  const [recaptchaWidgetId, setRecaptchaWidgetId] = useState(null);
   const navigate = useNavigate();
   const hasFetchedRef = React.useRef(false);
   const googleButtonRef = React.useRef(null);
@@ -163,9 +164,10 @@ const Signup = () => {
       
       try {
         const widgetId = window.grecaptcha.render('recaptcha-container', {
-          'sitekey': '6Lf4fi8sAAAAAHLv4A51kN1X614s3KQt89qOOIIL',
+          'sitekey': '6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI',
           'callback': 'onRecaptchaCallback'
         });
+        setRecaptchaWidgetId(widgetId);
         console.log('reCAPTCHA widget rendered successfully, widgetId:', widgetId);
       } catch (error) {
         console.error('Error rendering reCAPTCHA:', error);
@@ -193,10 +195,10 @@ const Signup = () => {
       setError('Please agree to the Terms and Privacy Policy');
       return;
     }
-    console.log('reCAPTCHA  loaded .',window.grecaptcha , recaptchaRef.current);
+    console.log('reCAPTCHA loaded:', recaptchaLoaded, 'widgetId:', recaptchaWidgetId);
     // Validate reCAPTCHA for all users
-    if (window.grecaptcha) {
-      const captchaToken = window.grecaptcha.getResponse();
+    if (window.grecaptcha && recaptchaWidgetId !== null) {
+      const captchaToken = window.grecaptcha.getResponse(recaptchaWidgetId);
       console.log('reCAPTCHA token:', captchaToken);
       if (!captchaToken) {
         setError('Please complete the reCAPTCHA verification');
