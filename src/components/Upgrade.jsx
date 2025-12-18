@@ -15,6 +15,7 @@ const Upgrade = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [currentPlan, setCurrentPlan] = useState(null);
+  const [currentPlanObj, setCurrentPlanObj] = useState(null);
   const [billingPeriod, setBillingPeriod] = useState('monthly');
 
   useEffect(() => {
@@ -38,6 +39,7 @@ const Upgrade = () => {
       const activePlan = plansData.find(plan => plan.isOpted);
       if (activePlan) {
         setCurrentPlan(activePlan.planName?.toUpperCase());
+        setCurrentPlanObj(activePlan);
       }
       
       setError(null);
@@ -157,7 +159,7 @@ const Upgrade = () => {
                         : 'text-gray-600 hover:text-gray-900'
                     }`}
                   >
-                    Annual
+                    Yearly
                   </button>
                 </div>
               </div>
@@ -191,18 +193,13 @@ const Upgrade = () => {
             {/* Subscription Plans */}
             {!loading && !error && plans.length > 0 && (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {plans
-                  .filter(plan => {
-                    const planInterval = (plan.interval || plan.billingCycle || 'monthly').toLowerCase();
-                    return billingPeriod === 'monthly' 
-                      ? planInterval.includes('month') || planInterval === 'monthly'
-                      : planInterval.includes('year') || planInterval.includes('annual');
-                  })
-                  .map((plan, index) => {
+                {plans.map((plan, index) => {
                   const isCurrentPlan = plan.isOpted || 
                                        (currentPlan && plan.planName?.toUpperCase() === currentPlan);
                   const isDisabled = plan.isDisabled || plan.disabled;
-                  const canDowngrade = plan.canDowngrade !== undefined ? plan.canDowngrade : true;
+                  
+                  // Prevent downgrade: if plan ID is less than current plan ID, can't downgrade
+                  const canDowngrade = currentPlanObj && plan.id < currentPlanObj.id ? false : true;
 
                   return (
                     <div
@@ -235,9 +232,16 @@ const Upgrade = () => {
                                 dangerouslySetInnerHTML={{ __html: plan.currencySymbol || '₹' }}
                               />
                               <span className={`text-4xl font-bold ${getPlanColor(plan.planName)}`}>
-                                {typeof plan.price === 'number' ? plan.price.toFixed(2) : plan.price}
+                                {(() => {
+                                  const displayPrice = billingPeriod === 'annual' && plan.discountedPrice 
+                                    ? plan.discountedPrice 
+                                    : plan.price;
+                                  return typeof displayPrice === 'number' ? displayPrice.toFixed(2) : displayPrice;
+                                })()}
                               </span>
-                              <span className="text-gray-600 font-medium">/{plan.interval || 'Monthly'}</span>
+                              <span className="text-gray-600 font-medium">
+                                /{billingPeriod === 'annual' ? 'Yearly' : 'Monthly'}
+                              </span>
                             </div>
                           )}
                           <p className="text-sm text-gray-500 mt-2">{plan.billingCycle || plan.duration || 'Forever'}</p>
