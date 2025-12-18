@@ -213,6 +213,56 @@ export const apiService = {
       throw typeof message === 'string' ? message : JSON.stringify(message);
     }
   },
+
+  // Google Sign In
+  googleSignIn: async (data, clientInfo) => {
+    try {
+      // Decode the Google JWT token to extract user information
+      const credential = data.credential;
+      
+      // Parse JWT token (simple base64 decode of the payload)
+      const base64Url = credential.split('.')[1];
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+      }).join(''));
+      
+      const googleUser = JSON.parse(jsonPayload);
+      
+      // Use timezone from clientInfo if available, otherwise browser timezone
+      const timezone = clientInfo?.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone;
+      
+      // Prepare payload for /Token endpoint
+      const payload = {
+        Email: googleUser.email,
+        Password: "",
+        usertype: "customer",
+        loginsource: 1,
+        loginreference: googleUser.sub,
+        name: googleUser.given_name || "",
+        surname: googleUser.family_name || "",
+        displayname: googleUser.name || "",
+        profilepic: googleUser.picture || "",
+        customertimezone: timezone,
+        GToken: credential,
+        IPAddress: clientInfo.ip,
+        CustomerLocation: clientInfo.city && clientInfo.country 
+          ? `${clientInfo.city}, ${clientInfo.country}` 
+          : clientInfo.country || null,
+        CountryId: clientInfo.countryCode || null,
+      };
+      
+      // Call the /Token endpoint
+      const response = await api.post('/Token', payload);
+      return response.data;
+    } catch (error) {
+      const message = error.response?.data?.message || 
+                      error.response?.data?.error || 
+                      error.response?.data || 
+                      'Google sign-in failed.';
+      throw typeof message === 'string' ? message : JSON.stringify(message);
+    }
+  },
 };
 
 export default api;

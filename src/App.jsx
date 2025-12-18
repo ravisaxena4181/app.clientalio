@@ -13,6 +13,7 @@ import WallOfLove from './components/WallOfLove';
 import InviteTemplates from './components/InviteTemplates';
 import Embed from './components/Embed';
 import CollectTestimonial from './components/CollectTestimonial';
+import GoogleSignInCallback from './components/GoogleSignInCallback';
 import PrivateRoute from './components/PrivateRoute';
 import { auth } from './utils/auth';
 
@@ -47,6 +48,10 @@ function App() {
         <Route 
           path="/reset-password" 
           element={auth.isAuthenticated() ? <Navigate to="/dashboard" replace /> : <ResetPassword />} 
+        />
+        <Route 
+          path="/signin-google" 
+          element={<GoogleSignInCallback />} 
         />
         <Route 
           path="/dashboard" 
