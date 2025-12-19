@@ -277,6 +277,44 @@ export const apiService = {
       throw typeof message === 'string' ? message : JSON.stringify(message);
     }
   },
+
+  // Create Subscription
+  createSubscription: async (data) => {
+    console.log('Creating subscription with data:', data);
+    return null;
+    const response = await fetch(`${API_BASE_URL}/Subscription/create`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${auth.getToken()}`,
+      },
+      body: JSON.stringify(data),
+    });
+    
+    if (!response.ok) {
+      throw new Error('Failed to create subscription');
+    }
+    
+    return response.json();
+  },
+
+  // Verify Subscription
+  verifySubscription: async (data) => {
+    const response = await fetch(`${API_BASE_URL}/Subscription/verify`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${auth.getToken()}`,
+      },
+      body: JSON.stringify(data),
+    });
+    
+    if (!response.ok) {
+      throw new Error('Failed to verify subscription');
+    }
+    
+    return response.json();
+  },
 };
 
 export default api;

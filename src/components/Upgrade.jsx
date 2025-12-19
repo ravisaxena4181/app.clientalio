@@ -72,7 +72,7 @@ const Upgrade = () => {
     }
 
     // Check currency and integrate appropriate payment gateway
-    if (plan.currencyCode !== 'INR') {
+    if (plan.currencyCode === 'INR') {
       // Razorpay Integration for INR
       initRazorpay(plan, selectedPlanCode, displayPrice);
     } else {
@@ -81,7 +81,7 @@ const Upgrade = () => {
     }
   };
 
-  const initRazorpay = (plan, planCode, amount) => {
+  const initRazorpay = async (plan, planCode, amount) => {
     // Load Razorpay script if not already loaded
     const loadRazorpayScript = () => {
       return new Promise((resolve) => {
@@ -93,23 +93,55 @@ const Upgrade = () => {
       });
     };
 
-    loadRazorpayScript().then((loaded) => {
-      if (!loaded) {
-        alert('Failed to load Razorpay SDK. Please check your internet connection.');
+    const loaded = await loadRazorpayScript();
+    if (!loaded) {
+      alert('Failed to load Razorpay SDK. Please check your internet connection.');
+      return;
+    }
+
+    try {
+      // Step 1: Create subscription via API
+      const createResponse = await apiService.createSubscription({
+        PlanId: planCode,
+        TotalCount: billingPeriod,
+        Email:   (user?.email || ''),
+      });
+
+      console.log('Subscription created:', createResponse);
+
+      // Extract subscription details from response
+      const { subscriptionId, orderId } = createResponse;
+
+      if (!subscriptionId) {
+        alert('Failed to create subscription. Please try again.');
         return;
       }
 
       const options = {
-        key: import.meta.env.VITE_RAZORPAY_KEY || 'rzp_test_ZfP2RmJbRoCyy2', // Add your Razorpay key
-        amount: amount * 100, // Razorpay accepts amount in paise
-        currency: plan.currencyCode || 'INR',
+        key: import.meta.env.VITE_RAZORPAY_KEY || 'rzp_test_ZfP2RmJbRoCyy2',
+        subscription_id: subscriptionId, // Use subscription_id instead of amount
         name: 'Clientalio',
         description: `${plan.planName} - ${billingPeriod === 'annual' ? 'Yearly' : 'Monthly'} Plan`,
-        handler: function (response) {
+        handler: async function (response) {
           console.log('Razorpay Payment Success:', response);
-          // Handle success - call your backend to verify payment
-          alert(`Payment successful! Payment ID: ${response.razorpay_payment_id}`);
-          // You can call API to update subscription status here
+          
+          // Step 2: Verify payment with backend
+          try {
+            const verifyResponse = await apiService.verifySubscription({
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_subscription_id: response.razorpay_subscription_id,
+              razorpay_signature: response.razorpay_signature,
+            });
+
+            console.log('Subscription verified:', verifyResponse);
+            alert('Payment successful! Your subscription has been activated.');
+            
+            // Refresh subscription plans to update UI
+            await fetchSubscriptionPlans();
+          } catch (verifyError) {
+            console.error('Verification error:', verifyError);
+            alert('Payment received but verification failed. Please contact support.');
+          }
         },
         prefill: {
           name: user?.displayName || '',
@@ -131,7 +163,10 @@ const Upgrade = () => {
 
       const razorpay = new window.Razorpay(options);
       razorpay.open();
-    });
+    } catch (error) {
+      console.error('Error creating subscription:', error);
+      alert('Failed to initiate payment. Please try again.');
+    }
   };
 
   const initStripe = async (plan, planCode, amount) => {
