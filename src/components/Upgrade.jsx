@@ -17,6 +17,8 @@ const Upgrade = () => {
   const [currentPlan, setCurrentPlan] = useState(null);
   const [currentPlanObj, setCurrentPlanObj] = useState(null);
   const [billingPeriod, setBillingPeriod] = useState('monthly');
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [paymentId, setPaymentId] = useState('');
 
   useEffect(() => {
     const userData = auth.getUser();
@@ -60,7 +62,7 @@ const Upgrade = () => {
     // Handle upgrade logic here
     const selectedPlanCode = billingPeriod === 'monthly' ? plan.planCode : plan.planCodeYearly;
     const displayPrice = billingPeriod === 'annual' && plan.discountedPrice ? plan.discountedPrice : plan.price;
-    
+    console.log('Selected plan:', plan);
     console.log('Upgrading to:', plan.planName);
     console.log('Selected plan code:', selectedPlanCode);
     console.log('Billing period:', billingPeriod);
@@ -105,18 +107,19 @@ const Upgrade = () => {
         PlanId: planCode,
         TotalCount: (billingPeriod==='Monthly') ? 12 : 1,
         Email:   (user?.email || ''),
+        Id: plan.id
       });
 
       console.log('Subscription created:', createResponse);
 
       // Extract subscription details from response
-      const { subscriptionId, orderId } = createResponse;
+      const { subscriptionId } = createResponse.data;
 
-      if (!subscriptionId) {
+      if (!createResponse.success) {
         alert('Failed to create subscription. Please try again.');
         return;
       }
-
+      alert(subscriptionId);
       const options = {
         key: import.meta.env.VITE_RAZORPAY_KEY || 'rzp_test_ZfP2RmJbRoCyy2',
         subscription_id: subscriptionId, // Use subscription_id instead of amount
@@ -134,10 +137,17 @@ const Upgrade = () => {
             });
 
             console.log('Subscription verified:', verifyResponse);
-            alert('Payment successful! Your subscription has been activated.');
             
-            // Refresh subscription plans to update UI
-            await fetchSubscriptionPlans();
+            // Verify response contains payment ID
+            if (verifyResponse && response.razorpay_payment_id) {
+              setPaymentId(response.razorpay_payment_id);
+              setShowSuccessModal(true);
+              
+              // Refresh subscription plans to update UI
+              await fetchSubscriptionPlans();
+            } else {
+              alert('Payment verification completed but response is invalid. Please contact support.');
+            }
           } catch (verifyError) {
             console.error('Verification error:', verifyError);
             alert('Payment received but verification failed. Please contact support.');
@@ -482,6 +492,41 @@ const Upgrade = () => {
           </div>
         </main>
       </div>
+
+      {/* Success Modal */}
+      {showSuccessModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full transform transition-all animate-bounce-in">
+            <div className="p-8 text-center">
+              {/* Success Icon */}
+              <div className="mx-auto flex items-center justify-center h-20 w-20 rounded-full bg-green-100 mb-6">
+                <svg className="h-12 w-12 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              
+              {/* Success Message */}
+              <h3 className="text-2xl font-bold text-gray-900 mb-3">
+                Payment Successful!
+              </h3>
+              <p className="text-gray-600 mb-2">
+                Your subscription has been activated.
+              </p>
+              <p className="text-sm text-gray-500 mb-6">
+                Payment ID: <span className="font-mono font-semibold text-gray-700">{paymentId}</span>
+              </p>
+              
+              {/* Close Button */}
+              <button
+                onClick={() => setShowSuccessModal(false)}
+                className="w-full bg-gradient-to-r from-green-500 to-emerald-600 text-white font-semibold py-3 px-6 rounded-lg hover:from-green-600 hover:to-emerald-700 transition-all duration-200 shadow-lg hover:shadow-xl"
+              >
+                Continue
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
