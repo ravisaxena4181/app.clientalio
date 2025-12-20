@@ -103,7 +103,7 @@ const Upgrade = () => {
       // Step 1: Create subscription via API
       const createResponse = await apiService.createSubscription({
         PlanId: planCode,
-        TotalCount: billingPeriod,
+        TotalCount: (billingPeriod==='Monthly') ? 12 : 1,
         Email:   (user?.email || ''),
       });
 
@@ -424,8 +424,8 @@ const Upgrade = () => {
 
                         {/* Action Button */}
                         <button
-                          onClick={() => !isCurrentPlan && !isDisabled && handleUpgrade(plan)}
-                          disabled={isCurrentPlan || (isDisabled && !isCurrentPlan) || !canDowngrade}
+                          onClick={() => handleUpgrade(plan)}
+                          // disabled={isCurrentPlan || (isDisabled && !isCurrentPlan) || !canDowngrade}
                           className={`w-full py-3 px-4 rounded-lg font-semibold transition-all duration-200 mb-6 ${getButtonClass(plan.planName, isCurrentPlan)}`}
                         >
                           {plan.buttonText || 

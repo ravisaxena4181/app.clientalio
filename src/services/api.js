@@ -281,7 +281,7 @@ export const apiService = {
   // Create Subscription
   createSubscription: async (data) => {
     console.log('Creating subscription with data:', data);
-    return null;
+     
     const response = await fetch(`${API_BASE_URL}/Subscription/create`, {
       method: 'POST',
       headers: {
