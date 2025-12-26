@@ -153,17 +153,17 @@ const Upgrade = () => {
             alert('Payment received but verification failed. Please contact support.');
           }
         },
-        prefill: {
-          name: user?.displayName || '',
-          email: user?.email || '',
-        },
-        notes: {
-          planCode: planCode,
-          billingPeriod: billingPeriod,
-        },
-        theme: {
-          color: '#3399cc',
-        },
+        // prefill: {
+        //   name: user?.displayName || '',
+        //   email: user?.email || '',
+        // },
+        // notes: {
+        //   planCode: planCode,
+        //   billingPeriod: billingPeriod,
+        // },
+        // theme: {
+        //   color: '#3399cc',
+        // },
         modal: {
           ondismiss: function () {
             console.log('Razorpay payment cancelled');
