@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { apiService } from '../services/api';
 import { auth } from '../utils/auth';
 import { getClientInfo } from '../utils/geolocation';
@@ -19,10 +19,19 @@ const Signup = () => {
   const [recaptchaLoaded, setRecaptchaLoaded] = useState(false);
   const [recaptchaWidgetId, setRecaptchaWidgetId] = useState(null);
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const hasFetchedRef = React.useRef(false);
   const googleButtonRef = React.useRef(null);
   const buttonRenderedRef = React.useRef(false);
   const recaptchaRef = React.useRef(null);
+
+  // Auto-fill email from URL parameter
+  useEffect(() => {
+    const emailParam = searchParams.get('email');
+    if (emailParam) {
+      setEmail(emailParam);
+    }
+  }, [searchParams]);
 
   // Global reCAPTCHA callbacks
   React.useEffect(() => {
