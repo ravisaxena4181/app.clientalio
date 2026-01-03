@@ -267,6 +267,7 @@ export const apiService = {
   // Get Subscription Plans
   getSubscriptionPlans: async () => {
     try {
+      console.log('Fetching subscription plans from API',api);
       const response = await api.get('/Customer/SubscriptionsPlans');
       return response.data;
     } catch (error) {

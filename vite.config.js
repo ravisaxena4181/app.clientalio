@@ -7,7 +7,7 @@ export default defineConfig({
     port: 3000,
     proxy: {
       '/api': {
-        target: 'https://apiclientalio.azurewebsites.net',
+        target: 'https://localhost:7293',
         changeOrigin: true,
         secure: false,
         rewrite: (path) => path,
