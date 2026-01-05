@@ -36,14 +36,14 @@ const Upgrade = () => {
       // Handle both array response and object with plans property
       const plansData = Array.isArray(response) ? response : response.plans || [];
       setPlans(plansData);
-      
+
       // Find and set current/active plan
       const activePlan = plansData.find(plan => plan.isOpted);
       if (activePlan) {
         setCurrentPlan(activePlan.planName?.toUpperCase());
         setCurrentPlanObj(activePlan);
       }
-      
+
       setError(null);
     } catch (err) {
       console.error('Error fetching subscription plans:', err);
@@ -58,7 +58,16 @@ const Upgrade = () => {
     navigate('/login');
   };
 
-  const handleUpgrade = async (plan) => {
+  const handleUpgrade = async (plan, canDowngrade) => {
+    if (!canDowngrade) {
+      alert("Downgrade not allowed.");
+      return;
+    }
+    if (plan.isOpted) {
+      alert("You have already opted for this plan.");
+      return;
+    }
+    return;
     // Handle upgrade logic here
     const selectedPlanCode = billingPeriod === 'monthly' ? plan.planCode : plan.planCodeYearly;
     const displayPrice = billingPeriod === 'annual' && plan.discountedPrice ? plan.discountedPrice : plan.price;
@@ -105,15 +114,15 @@ const Upgrade = () => {
       // Step 1: Create subscription via API
       const createResponse = await apiService.createSubscription({
         PlanId: planCode,
-        TotalCount: (billingPeriod==='Monthly') ? 96 : 8,// 8 years for annual, 96 months for monthly
-        Email:   (user?.email || ''),
+        TotalCount: (billingPeriod === 'Monthly') ? 96 : 8,// 8 years for annual, 96 months for monthly
+        Email: (user?.email || ''),
         Id: plan.id
       });
 
       console.log('Subscription created----:', createResponse);
 
       // Extract subscription details from response
-      const   subscriptionId  = createResponse.data;
+      const subscriptionId = createResponse.data;
 
       if (!createResponse.success) {
         alert('Failed to create subscription. Please try again.');
@@ -127,7 +136,7 @@ const Upgrade = () => {
         description: `${plan.planName} - ${billingPeriod === 'annual' ? 'Yearly' : 'Monthly'} Plan`,
         handler: async function (response) {
           console.log('Razorpay Payment Success:', response);
-          
+
           // Step 2: Verify payment with backend
           try {
             const verifyResponse = await apiService.verifySubscription({
@@ -137,12 +146,12 @@ const Upgrade = () => {
             });
 
             console.log('Subscription verified:', verifyResponse);
-            
+
             // Verify response contains payment ID
             if (verifyResponse && response.razorpay_payment_id) {
               setPaymentId(response.razorpay_payment_id);
               setShowSuccessModal(true);
-              
+
               // Refresh subscription plans to update UI
               await fetchSubscriptionPlans();
             } else {
@@ -184,67 +193,67 @@ const Upgrade = () => {
     // For now, show a notification that this feature is coming soon
     alert(`Stripe payment integration is currently under development.\n\nPlan: ${plan.planName}\nAmount: ${plan.currencyCode || 'USD'} ${amount}\nBilling: ${billingPeriod === 'annual' ? 'Yearly' : 'Monthly'}\n\nPlease contact support or use a plan with INR currency for Razorpay payment.`);
     return;
-    
-     /*Uncomment this code when backend endpoint is ready
-    // Load Stripe script if not already loaded
-    const loadStripeScript = () => {
-      return new Promise((resolve) => {
-        if (window.Stripe) {
-          resolve(true);
-          return;
-        }
-        const script = document.createElement('script');
-        script.src = 'https://js.stripe.com/v3/';
-        script.onload = () => resolve(true);
-        script.onerror = () => resolve(false);
-        document.body.appendChild(script);
-      });
-    };
 
-    const loaded = await loadStripeScript();
-    if (!loaded) {
-      alert('Failed to load Stripe SDK. Please check your internet connection.');
-      return;
-    }
+    /*Uncomment this code when backend endpoint is ready
+   // Load Stripe script if not already loaded
+   const loadStripeScript = () => {
+     return new Promise((resolve) => {
+       if (window.Stripe) {
+         resolve(true);
+         return;
+       }
+       const script = document.createElement('script');
+       script.src = 'https://js.stripe.com/v3/';
+       script.onload = () => resolve(true);
+       script.onerror = () => resolve(false);
+       document.body.appendChild(script);
+     });
+   };
 
-    // Initialize Stripe
-    const stripe = window.Stripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
+   const loaded = await loadStripeScript();
+   if (!loaded) {
+     alert('Failed to load Stripe SDK. Please check your internet connection.');
+     return;
+   }
 
-    try {
-      // Call your backend to create a checkout session
-      const response = await fetch('/api/v1/create-checkout-session', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${auth.getToken()}`,
-        },
-        body: JSON.stringify({
-          planCode: planCode,
-          billingPeriod: billingPeriod,
-          amount: amount,
-          currency: plan.currencyCode || 'USD',
-        }),
-      });
+   // Initialize Stripe
+   const stripe = window.Stripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 
-      if (!response.ok) {
-        throw new Error('Failed to create checkout session');
-      }
+   try {
+     // Call your backend to create a checkout session
+     const response = await fetch('/api/v1/create-checkout-session', {
+       method: 'POST',
+       headers: {
+         'Content-Type': 'application/json',
+         'Authorization': `Bearer ${auth.getToken()}`,
+       },
+       body: JSON.stringify({
+         planCode: planCode,
+         billingPeriod: billingPeriod,
+         amount: amount,
+         currency: plan.currencyCode || 'USD',
+       }),
+     });
 
-      const session = await response.json();
+     if (!response.ok) {
+       throw new Error('Failed to create checkout session');
+     }
 
-      // Redirect to Stripe Checkout
-      const result = await stripe.redirectToCheckout({
-        sessionId: session.id,
-      });
+     const session = await response.json();
 
-      if (result.error) {
-        alert(result.error.message);
-      }
-    } catch (error) {
-      console.error('Stripe error:', error);
-      alert('Failed to initialize payment. Please try again.');
-    }
-    */
+     // Redirect to Stripe Checkout
+     const result = await stripe.redirectToCheckout({
+       sessionId: session.id,
+     });
+
+     if (result.error) {
+       alert(result.error.message);
+     }
+   } catch (error) {
+     console.error('Stripe error:', error);
+     alert('Failed to initialize payment. Please try again.');
+   }
+   */
   };
 
   const getPlanColor = (planName) => {
@@ -328,21 +337,19 @@ const Upgrade = () => {
                 <div className="flex items-center bg-gray-100 rounded-lg p-1">
                   <button
                     onClick={() => setBillingPeriod('monthly')}
-                    className={`px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
-                      billingPeriod === 'monthly'
+                    className={`px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${billingPeriod === 'monthly'
                         ? 'bg-white text-gray-900 shadow-sm'
                         : 'text-gray-600 hover:text-gray-900'
-                    }`}
+                      }`}
                   >
                     Monthly
                   </button>
                   <button
                     onClick={() => setBillingPeriod('annual')}
-                    className={`px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
-                      billingPeriod === 'annual'
+                    className={`px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${billingPeriod === 'annual'
                         ? 'bg-white text-gray-900 shadow-sm'
                         : 'text-gray-600 hover:text-gray-900'
-                    }`}
+                      }`}
                   >
                     Yearly
                   </button>
@@ -379,10 +386,10 @@ const Upgrade = () => {
             {!loading && !error && plans.length > 0 && (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {plans.map((plan, index) => {
-                  const isCurrentPlan = plan.isOpted || 
-                                       (currentPlan && plan.planName?.toUpperCase() === currentPlan);
+                  const isCurrentPlan = plan.isOpted ||
+                    (currentPlan && plan.planName?.toUpperCase() === currentPlan);
                   const isDisabled = plan.isDisabled || plan.disabled;
-                  
+
                   // Prevent downgrade: if plan ID is less than current plan ID, can't downgrade
                   const canDowngrade = currentPlanObj && plan.id < currentPlanObj.id ? false : true;
 
@@ -412,14 +419,14 @@ const Upgrade = () => {
                             <div className="text-4xl font-bold text-indigo-600">Free</div>
                           ) : (
                             <div className="flex items-baseline gap-2">
-                              <span 
+                              <span
                                 className="text-2xl font-bold text-gray-900"
                                 dangerouslySetInnerHTML={{ __html: plan.currencySymbol || '₹' }}
                               />
                               <span className={`text-4xl font-bold ${getPlanColor(plan.planName)}`}>
                                 {(() => {
-                                  const displayPrice = billingPeriod === 'annual' && plan.discountedPrice 
-                                    ? plan.discountedPrice 
+                                  const displayPrice = billingPeriod === 'annual' && plan.discountedPrice
+                                    ? plan.discountedPrice
                                     : plan.price;
                                   return typeof displayPrice === 'number' ? displayPrice.toFixed(2) : displayPrice;
                                 })()}
@@ -429,20 +436,20 @@ const Upgrade = () => {
                               </span>
                             </div>
                           )}
-                          <p className="text-sm text-gray-500 mt-2">{plan.billingCycle || plan.duration || 'Forever'}</p>
+
                         </div>
 
                         {/* Action Button */}
                         <button
-                          onClick={() => handleUpgrade(plan)}
+                          onClick={() => handleUpgrade(plan, canDowngrade, isCurrentPlan)}
                           // disabled={isCurrentPlan || (isDisabled && !isCurrentPlan) || !canDowngrade}
                           className={`w-full py-3 px-4 rounded-lg font-semibold transition-all duration-200 mb-6 ${getButtonClass(plan.planName, isCurrentPlan)}`}
                         >
-                          {plan.buttonText || 
-                           (isCurrentPlan ? 'Opted' : 
-                            !canDowngrade ? "Can't degrade" : 
-                            isDisabled ? 'Upgrade is disabled for sometime' : 
-                            'Upgrade')}
+                          {plan.buttonText ||
+                            (isCurrentPlan ? 'Opted' :
+                              !canDowngrade ? "Can't degrade" :
+                                isDisabled ? 'Upgrade is disabled for sometime' :
+                                  'Upgrade')}
                         </button>
 
                         {/* Features */}
@@ -457,21 +464,21 @@ const Upgrade = () => {
                             .filter(feature => !feature.isHidden)
                             .sort((a, b) => (a.orderNumber || 0) - (b.orderNumber || 0))
                             .map((feature, featureIndex) => (
-                            <div key={feature.id || featureIndex} className="flex items-start gap-2">
-                              {feature.isAvailable ? (
-                                <svg className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                </svg>
-                              ) : (
-                                <svg className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                </svg>
-                              )}
-                              <span className={`text-sm ${feature.isAvailable ? 'text-gray-600' : 'text-gray-400 line-through'}`}>
-                                {feature.featureName || feature}
-                              </span>
-                            </div>
-                          ))}
+                              <div key={feature.id || featureIndex} className="flex items-start gap-2">
+                                {feature.isAvailable ? (
+                                  <svg className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                  </svg>
+                                ) : (
+                                  <svg className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                  </svg>
+                                )}
+                                <span className={`text-sm ${feature.isAvailable ? 'text-gray-600' : 'text-gray-400 line-through'}`}>
+                                  {feature.featureName || feature}
+                                </span>
+                              </div>
+                            ))}
                         </div>
                       </div>
                     </div>
@@ -504,7 +511,7 @@ const Upgrade = () => {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
               </div>
-              
+
               {/* Success Message */}
               <h3 className="text-2xl font-bold text-gray-900 mb-3">
                 Payment Successful!
@@ -515,7 +522,7 @@ const Upgrade = () => {
               <p className="text-sm text-gray-500 mb-6">
                 Payment ID: <span className="font-mono font-semibold text-gray-700">{paymentId}</span>
               </p>
-              
+
               {/* Close Button */}
               <button
                 onClick={() => setShowSuccessModal(false)}
