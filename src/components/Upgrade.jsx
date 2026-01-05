@@ -105,15 +105,15 @@ const Upgrade = () => {
       // Step 1: Create subscription via API
       const createResponse = await apiService.createSubscription({
         PlanId: planCode,
-        TotalCount: (billingPeriod==='Monthly') ? 12 : 1,
+        TotalCount: (billingPeriod==='Monthly') ? 96 : 8,// 8 years for annual, 96 months for monthly
         Email:   (user?.email || ''),
         Id: plan.id
       });
 
-      console.log('Subscription created:', createResponse);
+      console.log('Subscription created----:', createResponse);
 
       // Extract subscription details from response
-      const { subscriptionId } = createResponse.data;
+      const   subscriptionId  = createResponse.data;
 
       if (!createResponse.success) {
         alert('Failed to create subscription. Please try again.');
