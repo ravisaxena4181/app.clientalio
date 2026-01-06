@@ -10,8 +10,8 @@ import Footer from './Footer';
 const WallOfLove = () => {
   const [user, setUser] = useState(null);
   const [testimonials, setTestimonials] = useState([]);
-  const [wallTitle, setWallTitle] = useState('What our clients says about us!');
-  const [wallSubtitle, setWallSubtitle] = useState('Read the our client\'s experience with clientalio.');
+  const [wallTitle, setWallTitle] = useState('');
+  const [wallSubtitle, setWallSubtitle] = useState('');
   const [loading, setLoading] = useState(true);
   const [menuOpen, setMenuOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -176,19 +176,19 @@ const WallOfLove = () => {
                 <div className="loading mb-4"></div>
                 <p className="text-gray-600">Loading testimonials...</p>
               </div>
+            ) : !Array.isArray(testimonials) || testimonials.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-20 text-center">
+                <div className="bg-gray-100 rounded-full p-8 mb-6">
+                  <svg className="w-24 h-24 text-primary" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <h3 className="text-2xl font-semibold text-gray-900 mb-2">Wall of love not yet created</h3>
+                <p className="text-gray-600 mb-6 max-w-md">Start collecting testimonials to display on your wall of love</p>
+              </div>
             ) : (
               <div className="columns-1 sm:columns-2 lg:columns-3 gap-6 space-y-6">
-                {!Array.isArray(testimonials) || testimonials.length === 0 ? (
-                  <div className="break-inside-avoid flex flex-col items-center justify-center py-20 text-center">
-                    <div className="bg-gray-100 rounded-full p-8 mb-6">
-                      <svg className="w-24 h-24 text-primary" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" />
-                      </svg>
-                    </div>
-                    <h3 className="text-2xl font-semibold text-gray-900 mb-2">No testimonials yet</h3>
-                    <p className="text-gray-600 mb-6 max-w-md">Start collecting testimonials to display on your wall of love</p>
-                  </div>
-                ) : (
+                {
                   Array.isArray(testimonials) && testimonials.map((testimonial) => {
                     if (testimonial.videoLinkRecorded) {
                       return (
@@ -410,8 +410,7 @@ const WallOfLove = () => {
                       </div>
                       );
                     }
-                  })
-                )}
+                  })}
               </div>
             )}
           </div>

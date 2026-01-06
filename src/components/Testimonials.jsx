@@ -156,63 +156,62 @@ const Testimonials = () => {
               <div className="loading mb-4"></div>
               <p className="text-gray-600">Loading testimonials...</p>
             </div>
-          ) : (
-            <div className={viewMode === 'card' ? 'columns-1 sm:columns-2 lg:columns-3 gap-6 space-y-6' : 'space-y-4'}>
-              {(() => {
-                // Filter testimonials based on search keyword
-                const filteredTestimonials = testimonials.filter((testimonial) => {
-                  if (!searchKeyword.trim()) return true;
-                  
-                  const keyword = searchKeyword.toLowerCase();
-                  const clientName = (testimonial.clientName || '').toLowerCase();
-                  const workTitle = (testimonial.workTitle || '').toLowerCase();
-                  const companyName = (testimonial.companyName || '').toLowerCase();
-                  const textRecorded = (testimonial.textRecorded || '').toLowerCase();
-                  const category = (testimonial.category || '').toLowerCase();
-                  
-                  return (
-                    clientName.includes(keyword) ||
-                    workTitle.includes(keyword) ||
-                    companyName.includes(keyword) ||
-                    textRecorded.includes(keyword) ||
-                    category.includes(keyword)
-                  );
-                });
+          ) : (() => {
+            // Filter testimonials based on search keyword
+            const filteredTestimonials = testimonials.filter((testimonial) => {
+              if (!searchKeyword.trim()) return true;
+              
+              const keyword = searchKeyword.toLowerCase();
+              const clientName = (testimonial.clientName || '').toLowerCase();
+              const workTitle = (testimonial.workTitle || '').toLowerCase();
+              const companyName = (testimonial.companyName || '').toLowerCase();
+              const textRecorded = (testimonial.textRecorded || '').toLowerCase();
+              const category = (testimonial.category || '').toLowerCase();
+              
+              return (
+                clientName.includes(keyword) ||
+                workTitle.includes(keyword) ||
+                companyName.includes(keyword) ||
+                textRecorded.includes(keyword) ||
+                category.includes(keyword)
+              );
+            });
 
-                return filteredTestimonials.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-20 text-center">
-                  <div className="bg-gray-100 rounded-full p-8 mb-6">
-                    {searchKeyword ? (
-                      <svg className="w-24 h-24 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                      </svg>
-                    ) : (
-                      <svg className="w-24 h-24 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                      </svg>
-                    )}
-                  </div>
-                  <h3 className="text-2xl font-semibold text-gray-900 mb-2">
-                    {searchKeyword ? 'No testimonials found' : 'No testimonials yet'}
-                  </h3>
-                  <p className="text-gray-600 mb-6 max-w-md">
-                    {searchKeyword 
-                      ? `No testimonials match "${searchKeyword}". Try a different search term.`
-                      : 'Start collecting video testimonials from your clients to showcase social proof'
-                    }
-                  </p>
+            return filteredTestimonials.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-20 text-center">
+                <div className="bg-gray-100 rounded-full p-8 mb-6">
                   {searchKeyword ? (
-                    <button className="btn btn-primary" onClick={() => setSearchKeyword('')}>
-                      Clear Search
-                    </button>
+                    <svg className="w-24 h-24 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
                   ) : (
-                    <button className="btn btn-primary" onClick={() => navigate('/collect')}>
-                      Get Started
-                    </button>
+                    <svg className="w-24 h-24 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                    </svg>
                   )}
                 </div>
-              ) : (
-                filteredTestimonials.map((testimonial) => {
+                <h3 className="text-2xl font-semibold text-gray-900 mb-2">
+                  {searchKeyword ? 'No testimonials found' : 'No testimonials yet'}
+                </h3>
+                <p className="text-gray-600 mb-6 max-w-md">
+                  {searchKeyword 
+                    ? `No testimonials match "${searchKeyword}". Try a different search term.`
+                    : 'Start collecting video testimonials from your clients to showcase social proof'
+                  }
+                </p>
+                {searchKeyword ? (
+                  <button className="btn btn-primary" onClick={() => setSearchKeyword('')}>
+                    Clear Search
+                  </button>
+                ) : (
+                  <button className="btn btn-primary" onClick={() => navigate('/collect')}>
+                    Get Started
+                  </button>
+                )}
+              </div>
+            ) : (
+              <div className={viewMode === 'card' ? 'columns-1 sm:columns-2 lg:columns-3 gap-6 space-y-6' : 'space-y-4'}>
+                {filteredTestimonials.map((testimonial) => {
                   const isCardView = viewMode === 'card';
                   
                   return testimonial.videoLinkRecorded ? (
@@ -444,11 +443,10 @@ const Testimonials = () => {
                       </div>
                     </div>
                   );
-                })
-              );
-              })()}
-            </div>
-          )}
+                })}
+              </div>
+            );
+          })()}
         </div>
       </main>
         <Footer />
