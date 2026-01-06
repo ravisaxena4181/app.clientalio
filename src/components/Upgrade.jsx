@@ -4,6 +4,7 @@ import Sidebar from './Sidebar';
 import HeaderNav from './HeaderNav';
 import { auth } from '../utils/auth';
 import { apiService } from '../services/api';
+import MessageModal from './MessageModal';
 
 const Upgrade = () => {
   const navigate = useNavigate();
@@ -17,8 +18,16 @@ const Upgrade = () => {
   const [currentPlan, setCurrentPlan] = useState(null);
   const [currentPlanObj, setCurrentPlanObj] = useState(null);
   const [billingPeriod, setBillingPeriod] = useState('monthly');
-  const [showSuccessModal, setShowSuccessModal] = useState(false);
-  const [paymentId, setPaymentId] = useState('');
+  const [upgradingPlanId, setUpgradingPlanId] = useState(null);
+  const [messageModal, setMessageModal] = useState({
+    isOpen: false,
+    type: 'success',
+    title: '',
+    message: '',
+    additionalInfo: null,
+    buttonText: 'Continue',
+    onButtonClick: null
+  });
 
   useEffect(() => {
     const userData = auth.getUser();
@@ -26,6 +35,7 @@ const Upgrade = () => {
       setUser(userData);
     }
     fetchSubscriptionPlans();
+    console.log('User data on Upgrade page:', userData);
   }, []);
 
   const fetchSubscriptionPlans = async () => {
@@ -57,17 +67,32 @@ const Upgrade = () => {
     auth.logout();
     navigate('/login');
   };
+  const closeMessageModal = () => {
+    setMessageModal({ ...messageModal, isOpen: false });
+  };
 
+  const showMessage = (type, title, message, additionalInfo = null, buttonText = 'Continue', onButtonClick = null) => {
+    setMessageModal({
+      isOpen: true,
+      type,
+      title,
+      message,
+      additionalInfo,
+      buttonText,
+      onButtonClick: onButtonClick || closeMessageModal
+    });
+  };
   const handleUpgrade = async (plan, canDowngrade) => {
+     
     if (!canDowngrade) {
-      alert("Downgrade not allowed.");
+      showMessage('error', 'Downgrade Not Allowed', 'You cannot downgrade to a lower plan.');
       return;
     }
     if (plan.isOpted) {
-      alert("You have already opted for this plan.");
+      showMessage('error', 'Already Subscribed', 'You have already opted for this plan.');
       return;
     }
-    return;
+     
     // Handle upgrade logic here
     const selectedPlanCode = billingPeriod === 'monthly' ? plan.planCode : plan.planCodeYearly;
     const displayPrice = billingPeriod === 'annual' && plan.discountedPrice ? plan.discountedPrice : plan.price;
@@ -78,18 +103,24 @@ const Upgrade = () => {
     console.log('Currency Code:', plan.currencyCode);
 
     if (!selectedPlanCode) {
-      alert('Plan code not available for the selected billing period.');
+      showMessage('error', 'Plan Code Missing', 'Plan code not available for the selected billing period.');
       return;
     }
+
+    // Set upgrading state
+    setUpgradingPlanId(plan.id);
 
     // Check currency and integrate appropriate payment gateway
     if (plan.currencyCode === 'INR') {
       // Razorpay Integration for INR
-      initRazorpay(plan, selectedPlanCode, displayPrice);
+      await initRazorpay(plan, selectedPlanCode, displayPrice);
     } else {
       // Stripe Integration for other currencies
-      initStripe(plan, selectedPlanCode, displayPrice);
+      await initStripe(plan, selectedPlanCode, displayPrice);
     }
+
+    // Reset upgrading state
+    setUpgradingPlanId(null);
   };
 
   const initRazorpay = async (plan, planCode, amount) => {
@@ -106,7 +137,8 @@ const Upgrade = () => {
 
     const loaded = await loadRazorpayScript();
     if (!loaded) {
-      alert('Failed to load Razorpay SDK. Please check your internet connection.');
+      setUpgradingPlanId(null);
+      showMessage('error', 'Failed to Load Payment Gateway', 'Failed to load Razorpay SDK. Please check your internet connection.');
       return;
     }
 
@@ -125,10 +157,10 @@ const Upgrade = () => {
       const subscriptionId = createResponse.data;
 
       if (!createResponse.success) {
-        alert('Failed to create subscription. Please try again.');
+        setUpgradingPlanId(null);
+        showMessage('error', 'Subscription Failed', 'Failed to create subscription. Please try again.');
         return;
       }
-      alert(subscriptionId);
       const options = {
         key: import.meta.env.VITE_RAZORPAY_KEY || 'rzp_test_ZfP2RmJbRoCyy2',
         subscription_id: subscriptionId, // Use subscription_id instead of amount
@@ -149,33 +181,43 @@ const Upgrade = () => {
 
             // Verify response contains payment ID
             if (verifyResponse && response.razorpay_payment_id) {
-              setPaymentId(response.razorpay_payment_id);
-              setShowSuccessModal(true);
-
               // Refresh subscription plans to update UI
               await fetchSubscriptionPlans();
+              
+              showMessage(
+                'success',
+                'Payment Successful!',
+                'Your subscription has been activated.',
+                `Payment ID: ${response.razorpay_payment_id}`,
+                'Continue',
+                () => {
+                  closeMessageModal();
+                  navigate('/');
+                }
+              );
             } else {
-              alert('Payment verification completed but response is invalid. Please contact support.');
+              showMessage('error', 'Verification Failed', 'Payment verification completed but response is invalid. Please contact support.');
             }
           } catch (verifyError) {
             console.error('Verification error:', verifyError);
-            alert('Payment received but verification failed. Please contact support.');
+            showMessage('error', 'Verification Failed', 'Payment received but verification failed. Please contact support.');
           }
         },
-        // prefill: {
-        //   name: user?.displayName || '',
-        //   email: user?.email || '',
-        // },
-        // notes: {
-        //   planCode: planCode,
-        //   billingPeriod: billingPeriod,
-        // },
-        // theme: {
-        //   color: '#3399cc',
-        // },
+        prefill: {
+          name: user?.displayName || '',
+          email: user?.email || '',
+        },
+        notes: {
+          planCode: planCode,
+          billingPeriod: billingPeriod,
+        },
+        theme: {
+          color: '#3399cc',
+        },
         modal: {
           ondismiss: function () {
             console.log('Razorpay payment cancelled');
+            showMessage('error', 'Upgrade cancelled', 'Razorpay payment cancelled by user.');
           },
         },
       };
@@ -184,14 +226,21 @@ const Upgrade = () => {
       razorpay.open();
     } catch (error) {
       console.error('Error creating subscription:', error);
-      alert('Failed to initiate payment. Please try again.');
+      setUpgradingPlanId(null);
+      showMessage('error', 'Payment Failed', 'Failed to initiate payment. Please try again.');
     }
   };
 
   const initStripe = async (plan, planCode, amount) => {
     // TODO: Stripe integration requires backend endpoint
     // For now, show a notification that this feature is coming soon
-    alert(`Stripe payment integration is currently under development.\n\nPlan: ${plan.planName}\nAmount: ${plan.currencyCode || 'USD'} ${amount}\nBilling: ${billingPeriod === 'annual' ? 'Yearly' : 'Monthly'}\n\nPlease contact support or use a plan with INR currency for Razorpay payment.`);
+    showMessage(
+      'error',
+      'Payment Gateway Unavailable',
+      'Stripe payment integration is currently under development.',
+      `Plan: ${plan.planName} | Amount: ${plan.currencyCode || 'USD'} ${amount} | Billing: ${billingPeriod === 'annual' ? 'Yearly' : 'Monthly'}\n\nPlease contact support or use a plan with INR currency for Razorpay payment.`,
+      'OK'
+    );
     return;
 
     /*Uncomment this code when backend endpoint is ready
@@ -442,14 +491,15 @@ const Upgrade = () => {
                         {/* Action Button */}
                         <button
                           onClick={() => handleUpgrade(plan, canDowngrade, isCurrentPlan)}
-                          // disabled={isCurrentPlan || (isDisabled && !isCurrentPlan) || !canDowngrade}
-                          className={`w-full py-3 px-4 rounded-lg font-semibold transition-all duration-200 mb-6 ${getButtonClass(plan.planName, isCurrentPlan)}`}
+                          disabled={upgradingPlanId === plan.id}
+                          className={`w-full py-3 px-4 rounded-lg font-semibold transition-all duration-200 mb-6 ${upgradingPlanId === plan.id ? 'bg-gray-400 text-white cursor-not-allowed' : getButtonClass(plan.planName, isCurrentPlan)}`}
                         >
-                          {plan.buttonText ||
-                            (isCurrentPlan ? 'Opted' :
-                              !canDowngrade ? "Can't degrade" :
-                                isDisabled ? 'Upgrade is disabled for sometime' :
-                                  'Upgrade')}
+                          {upgradingPlanId === plan.id ? 'Upgrading...' :
+                            (plan.buttonText ||
+                              (isCurrentPlan ? 'Opted' :
+                                !canDowngrade ? "Can't degrade" :
+                                  isDisabled ? 'Upgrade is disabled for sometime' :
+                                    'Upgrade'))}
                         </button>
 
                         {/* Features */}
@@ -500,40 +550,17 @@ const Upgrade = () => {
         </main>
       </div>
 
-      {/* Success Modal */}
-      {showSuccessModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full transform transition-all animate-bounce-in">
-            <div className="p-8 text-center">
-              {/* Success Icon */}
-              <div className="mx-auto flex items-center justify-center h-20 w-20 rounded-full bg-green-100 mb-6">
-                <svg className="h-12 w-12 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-              </div>
-
-              {/* Success Message */}
-              <h3 className="text-2xl font-bold text-gray-900 mb-3">
-                Payment Successful!
-              </h3>
-              <p className="text-gray-600 mb-2">
-                Your subscription has been activated.
-              </p>
-              <p className="text-sm text-gray-500 mb-6">
-                Payment ID: <span className="font-mono font-semibold text-gray-700">{paymentId}</span>
-              </p>
-
-              {/* Close Button */}
-              <button
-                onClick={() => setShowSuccessModal(false)}
-                className="w-full bg-gradient-to-r from-green-500 to-emerald-600 text-white font-semibold py-3 px-6 rounded-lg hover:from-green-600 hover:to-emerald-700 transition-all duration-200 shadow-lg hover:shadow-xl"
-              >
-                Continue
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Message Modal */}
+      <MessageModal
+        isOpen={messageModal.isOpen}
+        onClose={closeMessageModal}
+        type={messageModal.type}
+        title={messageModal.title}
+        message={messageModal.message}
+        additionalInfo={messageModal.additionalInfo}
+        buttonText={messageModal.buttonText}
+        onButtonClick={messageModal.onButtonClick}
+      />
     </div>
   );
 };
