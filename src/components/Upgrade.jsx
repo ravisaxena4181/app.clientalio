@@ -36,7 +36,7 @@ const Upgrade = () => {
     }
     fetchSubscriptionPlans();
     console.log('User data on Upgrade page:', userData);
-  }, []);
+  }, [navigate]);
 
   const fetchSubscriptionPlans = async () => {
     try {

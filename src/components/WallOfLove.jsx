@@ -28,7 +28,7 @@ const WallOfLove = () => {
     }
     setUser(userData);
     loadTestimonials(userData.userId);
-  }, []);
+  }, [navigate]);
 
   const loadTestimonials = async (userId) => {
     if (!userId) {
